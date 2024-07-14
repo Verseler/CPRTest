@@ -34,9 +34,26 @@ export default function App() {
     setPreviousZ(z);
   };
 
+  const Message = () => {
+    if (depth >= 2 && depth <= 2.4) {
+      return <Text style={[styles.message, { color: "green" }]}>Good</Text>;
+    } else if (depth >= 2.5) {
+      return (
+        <Text style={[styles.message, { color: "red" }]}>"Bad: Too much!</Text>
+      );
+    } else {
+      return (
+        <Text style={[styles.message, { color: "orange" }]}>
+          Bad: Too little!
+        </Text>
+      );
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Compression Depth: {depth} inches</Text>
+      {Message()}
     </View>
   );
 }
@@ -49,5 +66,9 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 24,
+  },
+  message: {
+    fontSize: 20,
+    marginVertical: 20,
   },
 });
