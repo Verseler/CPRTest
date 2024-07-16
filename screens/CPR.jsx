@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Accelerometer } from "expo-sensors";
 
@@ -6,7 +6,7 @@ export default function CPR() {
   const [{ z }, setData] = useState({ z: 0 });
   const [subscription, setSubscription] = useState(null);
   const [depth, setDepth] = useState(0);
-  const [previousZ, setPreviousZ] = useState(null);
+  const [previousZ, setPreviousZ] = useState(1);
 
   const _subscribe = () => {
     Accelerometer.setUpdateInterval(100); // 100ms is the interval of the accelerometer data (z, x, y)
@@ -19,29 +19,22 @@ export default function CPR() {
   };
 
   const _unsubscribe = () => {
-    // Unsubscribe: if subscription has value remove the eventListener
-    subscription && subscription.remove();
-    Accelerometer.removeAllListeners(); //just to make sure na remove. try walaon ni later
+    //remove the eventListener in Accelerometer
+    Accelerometer.removeAllListeners();
     //remove also the subscription value
     setSubscription(null);
+    //set depth and z data back to default value
+    setDepth(0);
+    setData({ z: 1 });
   };
 
-  useEffect(() => {
-    _subscribe();
-    return () => {
-      _unsubscribe();
-    };
-  }, []);
-
   const calculateDepth = ({ z }) => {
-    if (previousZ !== null) {
-      const deltaZ = z - previousZ;
-      //Change this part to get the accurate value of depth
-      const calibrationFactor = 4.5; //you can change it to  1 meter = 39.37 inches
+    const deltaZ = z - previousZ;
+    //Change this part to get the accurate value of depth
+    const calibrationFactor = 4.5; //you can change it to  1 meter = 39.37 inches
+    const compressionDepth = Math.abs(deltaZ * calibrationFactor);
+    setDepth(compressionDepth.toFixed(1));
 
-      const compressionDepth = Math.abs(deltaZ * calibrationFactor);
-      setDepth(compressionDepth.toFixed(1));
-    }
     setPreviousZ(z);
   };
 
