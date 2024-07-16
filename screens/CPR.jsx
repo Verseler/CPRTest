@@ -9,6 +9,7 @@ export default function CPR() {
   const [previousZ, setPreviousZ] = useState(1);
   const [timerOn, setTimerOn] = useState(false);
   const [time, setTime] = useState(0);
+  const [compressionStatus, setCompressionStatus] = useState(null);
   const timerRef = useRef(null);
   const depthRef = useRef(depth);
 
@@ -32,6 +33,7 @@ export default function CPR() {
       clearInterval(timerRef.current);
       setTimerOn(false);
       setTime(0);
+      setCompressionStatus(null);
     }
   };
 
@@ -65,11 +67,16 @@ export default function CPR() {
 
   const checkCompression = () => {
     if (timerOn) {
+      console.log("depth: ", depthRef.current);
       if (depthRef.current >= 1) {
-        console.log("Compression performed!"); // You can replace this with your preferred feedback mechanism
+        setCompressionStatus("green");
       } else {
-        console.log("No compression detected.");
+        setCompressionStatus("red");
       }
+
+      setTimeout(() => {
+        setCompressionStatus(null);
+      }, 200);
     }
   };
 
@@ -77,7 +84,6 @@ export default function CPR() {
     if (timerOn) {
       timerRef.current = setInterval(() => {
         setTime((prevTime) => prevTime + 1);
-        console.log("depth: ", depthRef.current);
         checkCompression(); // Check for compression every 0.6 seconds (600ms)
       }, 600);
     } else {
@@ -103,11 +109,17 @@ export default function CPR() {
       <Text style={styles.text}>Z : {z.toFixed(1)}</Text>
       <Text style={styles.text}>Compression Depth: {depth} in</Text>
       {DepthMessage()}
-      <Text style={styles.text}>Time: {time / 10} seconds</Text>
+      <Text style={styles.text}>Time: {time} seconds</Text>
 
       <TouchableOpacity onPress={handleToggleTimer} style={styles.button}>
         <Text>{timerOn ? "Stop" : "Start"}</Text>
       </TouchableOpacity>
+
+      {compressionStatus && (
+        <Text style={[styles.feedback, { backgroundColor: compressionStatus }]}>
+          {compressionStatus === "green" ? "Good Timing" : "Bad Timing"}
+        </Text>
+      )}
     </View>
   );
 }
@@ -137,5 +149,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#eee",
     padding: 10,
+  },
+  feedback: {
+    marginTop: 20,
+    textAlign: "center",
+    fontSize: 20,
+    color: "#fff",
+    padding: 10,
+    position: "absolute",
+    bottom: 0,
   },
 });
