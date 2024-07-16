@@ -9,7 +9,8 @@ export default function CPR() {
   const [previousZ, setPreviousZ] = useState(1);
   const [timerOn, setTimerOn] = useState(false);
   const [time, setTime] = useState(0);
-  const [compressionStatus, setCompressionStatus] = useState(null);
+  const [timingMetrics, setTimingMetrics] = useState(null);
+  const [depthMetrics, setDepthMetrics] = useState(null);
   const timerRef = useRef(null);
   const depthRef = useRef(depth);
 
@@ -33,7 +34,7 @@ export default function CPR() {
       clearInterval(timerRef.current);
       setTimerOn(false);
       setTime(0);
-      setCompressionStatus(null);
+      setTimingMetrics(null);
     }
   };
 
@@ -49,33 +50,20 @@ export default function CPR() {
     depthRef.current = depth;
   }, [depth]);
 
-  const DepthMessage = () => {
-    if (depth >= 2 && depth <= 2.5) {
-      return <Text style={[styles.message, { color: "green" }]}>Good</Text>;
-    } else if (depth > 2.5) {
-      return (
-        <Text style={[styles.message, { color: "red" }]}>Bad: Too much!</Text>
-      );
-    } else {
-      return (
-        <Text style={[styles.message, { color: "orange" }]}>
-          Bad: Too little!
-        </Text>
-      );
-    }
-  };
-
   const checkCompression = () => {
     if (timerOn) {
       console.log("depth: ", depthRef.current);
       if (depthRef.current >= 1) {
-        setCompressionStatus("green");
+        setTimingMetrics("green");
       } else {
-        setCompressionStatus("red");
+        setTimingMetrics("red");
       }
 
+      setDepthMetrics(depthRef.current);
+
       setTimeout(() => {
-        setCompressionStatus(null);
+        setTimingMetrics(null);
+        setDepthMetrics(null);
       }, 200);
     }
   };
@@ -108,21 +96,43 @@ export default function CPR() {
     <View style={styles.container}>
       <Text style={styles.text}>Z : {z.toFixed(1)}</Text>
       <Text style={styles.text}>Compression Depth: {depth} in</Text>
-      {DepthMessage()}
       <Text style={styles.text}>Time: {time} seconds</Text>
 
       <TouchableOpacity onPress={handleToggleTimer} style={styles.button}>
         <Text>{timerOn ? "Stop" : "Start"}</Text>
       </TouchableOpacity>
 
-      {compressionStatus && (
-        <Text style={[styles.feedback, { backgroundColor: compressionStatus }]}>
-          {compressionStatus === "green" ? "Good Timing" : "Bad Timing"}
+      {timingMetrics && (
+        <Text style={[styles.feedback, { backgroundColor: timingMetrics }]}>
+          {timingMetrics === "green" ? "Good Timing" : "Bad Timing"}
         </Text>
       )}
+      {depthMetrics && DepthMessage(depthMetrics)}
     </View>
   );
 }
+
+const DepthMessage = (depth) => {
+  if (depth >= 2 && depth <= 2.5) {
+    return (
+      <Text style={[styles.depthMetrics, { backgroundColor: "green" }]}>
+        {depth} Good
+      </Text>
+    );
+  } else if (depth > 2.5) {
+    return (
+      <Text style={[styles.depthMetrics, { backgroundColor: "red" }]}>
+        {depth} Bad: Too much!
+      </Text>
+    );
+  } else {
+    return (
+      <Text style={[styles.depthMetrics, { backgroundColor: "orange" }]}>
+        {depth} Bad: Too little!
+      </Text>
+    );
+  }
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -135,11 +145,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 20,
     color: "#fff",
-  },
-  message: {
-    fontSize: 16,
-    marginVertical: 20,
-    textAlign: "center",
   },
   button: {
     width: 300,
@@ -158,5 +163,17 @@ const styles = StyleSheet.create({
     padding: 10,
     position: "absolute",
     bottom: 0,
+  },
+  depthMetrics: {
+    marginTop: 20,
+    textAlign: "center",
+    fontSize: 20,
+    color: "white",
+    padding: 10,
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    fontSize: 16,
+    marginVertical: 20,
   },
 });
