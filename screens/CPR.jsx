@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Accelerometer } from "expo-sensors";
 
@@ -7,9 +7,13 @@ export default function CPR() {
   const [subscription, setSubscription] = useState(null);
   const [depth, setDepth] = useState(0);
   const [previousZ, setPreviousZ] = useState(1);
+  const [timerOn, setTimerOn] = useState(false);
+  const [time, setTime] = useState(0);
+  const timerRef = useRef(null);
+  const depthRef = useRef(depth);
 
   const _subscribe = () => {
-    Accelerometer.setUpdateInterval(100); // 100ms is the interval of the accelerometer data (z, x, y)
+    Accelerometer.setUpdateInterval(100);
     setSubscription(
       Accelerometer.addListener((data) => {
         setData(data);
@@ -19,24 +23,29 @@ export default function CPR() {
   };
 
   const _unsubscribe = () => {
-    //remove the eventListener in Accelerometer
     Accelerometer.removeAllListeners();
-    //remove also the subscription value
     setSubscription(null);
-    //set depth and z data back to default value
     setDepth(0);
     setData({ z: 1 });
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      setTimerOn(false);
+      setTime(0);
+    }
   };
 
   const calculateDepth = ({ z }) => {
     const deltaZ = z - previousZ;
-    //Change this part to get the accurate value of depth
-    const calibrationFactor = 4.5; //you can change it to  1 meter = 39.37 inches
+    const calibrationFactor = 4.5;
     const compressionDepth = Math.abs(deltaZ * calibrationFactor);
     setDepth(compressionDepth.toFixed(1));
-
     setPreviousZ(z);
   };
+
+  useEffect(() => {
+    depthRef.current = depth;
+  }, [depth]);
 
   const DepthMessage = () => {
     if (depth >= 2 && depth <= 2.5) {
@@ -54,17 +63,50 @@ export default function CPR() {
     }
   };
 
+  const checkCompression = () => {
+    if (timerOn) {
+      if (depthRef.current >= 1) {
+        console.log("Compression performed!"); // You can replace this with your preferred feedback mechanism
+      } else {
+        console.log("No compression detected.");
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (timerOn) {
+      timerRef.current = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+        console.log("depth: ", depthRef.current);
+        checkCompression(); // Check for compression every 0.6 seconds (600ms)
+      }, 600);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [timerOn]);
+
+  const handleToggleTimer = () => {
+    subscription ? _unsubscribe() : _subscribe();
+    setTimerOn(!timerOn);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Z : {z.toFixed(1)}</Text>
       <Text style={styles.text}>Compression Depth: {depth} in</Text>
       {DepthMessage()}
+      <Text style={styles.text}>Time: {time / 10} seconds</Text>
 
-      <TouchableOpacity
-        onPress={subscription ? _unsubscribe : _subscribe}
-        style={styles.button}
-      >
-        <Text>{subscription ? "On" : "Off"}</Text>
+      <TouchableOpacity onPress={handleToggleTimer} style={styles.button}>
+        <Text>{timerOn ? "Stop" : "Start"}</Text>
       </TouchableOpacity>
     </View>
   );
