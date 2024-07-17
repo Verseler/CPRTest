@@ -1,138 +1,120 @@
-import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Accelerometer } from "expo-sensors";
+import useCpr from "../hooks/useCpr";
 
 export default function CPR() {
-  const [{ z }, setData] = useState({ z: 0 });
-  const [subscription, setSubscription] = useState(null);
-  const [depth, setDepth] = useState(0);
-  const [previousZ, setPreviousZ] = useState(1);
-  const [timerOn, setTimerOn] = useState(false);
-  const [time, setTime] = useState(0);
-  const [timingMetrics, setTimingMetrics] = useState(null);
-  const [depthMetrics, setDepthMetrics] = useState(null);
-  const timerRef = useRef(null);
-  const depthRef = useRef(depth);
+  const {
+    z,
+    depth,
+    timer,
+    timerOn,
+    depthAttempt,
+    timingAttempt,
+    toggleStartAndStop,
+  } = useCpr();
 
-  const _subscribe = () => {
-    Accelerometer.setUpdateInterval(100);
-    setSubscription(
-      Accelerometer.addListener((data) => {
-        setData(data);
-        calculateDepth(data);
-      })
+  const displayDepthAttemptFeedback = (depth) => {
+    //default feedback data
+    let feedback = {
+      backgroundColor: "orange",
+      message: "Too little",
+    };
+
+    if (depth >= 2 && depth <= 2.5) {
+      feedback = { backgroundColor: "green", message: "Perfect" };
+    } else if (depth > 2.5) {
+      feedback = { backgroundColor: "red", message: "Too much" };
+    } else {
+      feedback = { backgroundColor: "orange", message: "Too little" };
+    }
+
+    //if there is a depthAttempt
+    if (depth) {
+      return (
+        <View
+          style={[
+            styles.feedbackContainer,
+            { right: 0, backgroundColor: feedback.backgroundColor },
+          ]}
+        >
+          <Text style={styles.depthFeedback}>{feedback.message}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View
+        style={[
+          styles.feedbackContainer,
+          { right: 0, backgroundColor: feedback.backgroundColor },
+        ]}
+      ></View>
     );
   };
 
-  const _unsubscribe = () => {
-    Accelerometer.removeAllListeners();
-    setSubscription(null);
-    setDepth(0);
-    setData({ z: 1 });
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      setTimerOn(false);
-      setTime(0);
-      setTimingMetrics(null);
-    }
-  };
-
-  const calculateDepth = ({ z }) => {
-    const deltaZ = z - previousZ;
-    const calibrationFactor = 4.5;
-    const compressionDepth = Math.abs(deltaZ * calibrationFactor);
-    setDepth(compressionDepth.toFixed(1));
-    setPreviousZ(z);
-  };
-
-  useEffect(() => {
-    depthRef.current = depth;
-  }, [depth]);
-
-  const checkCompression = () => {
-    if (timerOn) {
-      console.log("depth: ", depthRef.current);
-      if (depthRef.current >= 1) {
-        setTimingMetrics("green");
-      } else {
-        setTimingMetrics("red");
-      }
-
-      setDepthMetrics(depthRef.current);
-
-      setTimeout(() => {
-        setTimingMetrics(null);
-        setDepthMetrics(null);
-      }, 200);
-    }
-  };
-
-  useEffect(() => {
-    if (timerOn) {
-      timerRef.current = setInterval(() => {
-        setTime((prevTime) => prevTime + 1);
-        checkCompression(); // Check for compression every 0.6 seconds (600ms)
-      }, 600);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+  const displayTimingAttemptFeedback = (timing) => {
+    //default feedback data
+    let feedback = {
+      backgroundColor: "red",
+      message: "Bad",
     };
-  }, [timerOn]);
 
-  const handleToggleTimer = () => {
-    subscription ? _unsubscribe() : _subscribe();
-    setTimerOn(!timerOn);
+    if (timing == "Good") {
+      feedback = { backgroundColor: "green", message: "Perfect" };
+    } else {
+      feedback = { backgroundColor: "red", message: "Bad" };
+    }
+
+    //if there is a timingAttempt
+    if (timing) {
+      return (
+        <View
+          style={[
+            styles.feedbackContainer,
+            { left: 0, backgroundColor: feedback.backgroundColor },
+          ]}
+        >
+          <Text style={styles.timingFeedback}>{feedback.message}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View
+        style={[
+          styles.feedbackContainer,
+          { left: 0, backgroundColor: feedback.backgroundColor },
+        ]}
+      ></View>
+    );
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Z : {z.toFixed(1)}</Text>
       <Text style={styles.text}>Compression Depth: {depth} in</Text>
-      <Text style={styles.text}>Time: {time} seconds</Text>
+      <Text style={styles.text}>Time: {timer}</Text>
 
-      <TouchableOpacity onPress={handleToggleTimer} style={styles.button}>
+      <TouchableOpacity onPress={toggleStartAndStop} style={styles.button}>
         <Text>{timerOn ? "Stop" : "Start"}</Text>
       </TouchableOpacity>
 
-      {timingMetrics && (
-        <Text style={[styles.feedback, { backgroundColor: timingMetrics }]}>
-          {timingMetrics === "green" ? "Good Timing" : "Bad Timing"}
-        </Text>
-      )}
-      {depthMetrics && DepthMessage(depthMetrics)}
+      <Text
+        style={{
+          color: "white",
+          fontSize: 30,
+          fontWeight: "bold",
+          position: "absolute",
+          bottom: "40%",
+          right: 50,
+        }}
+      >
+        {depthAttempt}
+      </Text>
+      {displayTimingAttemptFeedback(timingAttempt)}
+      {displayDepthAttemptFeedback(depthAttempt)}
     </View>
   );
 }
-
-const DepthMessage = (depth) => {
-  if (depth >= 2 && depth <= 2.5) {
-    return (
-      <Text style={[styles.depthMetrics, { backgroundColor: "green" }]}>
-        {depth} Good
-      </Text>
-    );
-  } else if (depth > 2.5) {
-    return (
-      <Text style={[styles.depthMetrics, { backgroundColor: "red" }]}>
-        {depth} Bad: Too much!
-      </Text>
-    );
-  } else {
-    return (
-      <Text style={[styles.depthMetrics, { backgroundColor: "orange" }]}>
-        {depth} Bad: Too little!
-      </Text>
-    );
-  }
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -155,25 +137,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     padding: 10,
   },
-  feedback: {
-    marginTop: 20,
-    textAlign: "center",
-    fontSize: 20,
-    color: "#fff",
-    padding: 10,
+  feedbackContainer: {
     position: "absolute",
     bottom: 0,
+    height: 150,
+    width: 150,
+    borderRadius: 99,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  depthMetrics: {
-    marginTop: 20,
+  timingFeedback: {
     textAlign: "center",
-    fontSize: 20,
+    fontSize: 28,
+    fontWeight: "bold",
     color: "white",
-    padding: 10,
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    fontSize: 16,
-    marginVertical: 20,
+  },
+  depthFeedback: {
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
   },
 });
