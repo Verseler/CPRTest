@@ -27,6 +27,17 @@ const useCpr = () => {
   //reference to the depth. This is needed for checking the timing
   const depthRef = useRef(depth);
 
+  //overall scores based on depth and timing
+  const [overallScore, setOverallScore] = useState(0);
+
+  //every time timingAttempt and depthAttempt changes which means every 0.6 seconds, this function will be called
+  //the overall score will be updated based on the depth and timing
+  useEffect(() => {
+    if (timingAttempt != null && depthAttempt != null) {
+      setOverallScore(getScore(depthAttempt, timingAttempt));
+    }
+  }, [timingAttempt, depthAttempt]);
+
   /**
    *
    * Start CPR
@@ -122,14 +133,13 @@ const useCpr = () => {
       //if the depth is greater than 1 inch, it means that compression is performed
       //during the time this function is called
       if (depthRef.current >= 1) {
-        setTimingAttempt("Good");
+        setTimingAttempt("Perfect");
       } else {
         setTimingAttempt("Bad");
       }
 
       //set the depthAttempt to the latest depth value
       setDepthAttempt(depthRef.current);
-
       /**
        *
        * after 100ms or 0.1 seconds set the timingAttempt and depthAttempt to null or their default value
@@ -142,9 +152,22 @@ const useCpr = () => {
       setTimeout(() => {
         setTimingAttempt(null);
         setDepthAttempt(null);
+        setOverallScore(null);
       }, 100);
     }
   };
+
+  //Get the score based on the depth and timing
+  function getScore(depth, timing) {
+    if (depth < 2 && timing == "Bad") return 0;
+    else if (depth >= 2 && depth <= 2.5 && timing === "Bad") return 1;
+    else if (depth < 2 && timing == "Perfect") return 1;
+    else if (depth >= 2 && depth <= 2.5 && timing === "Perfect") return 2;
+    else if (depth > 2.5 && timing == "Perfect") return 3;
+    else if (depth > 2.5 && timing == "Bad") return 4;
+
+    return 0;
+  }
 
   //This where timer counting happens
   useEffect(() => {
@@ -198,6 +221,7 @@ const useCpr = () => {
     timerOn,
     depthAttempt,
     timingAttempt,
+    overallScore,
     toggleStartAndStop,
   };
 };

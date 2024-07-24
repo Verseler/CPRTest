@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import useCpr from "../hooks/useCpr";
+import ScoringBar from "../components/ScoringBar";
 
 export default function CPR() {
   const {
@@ -9,6 +10,7 @@ export default function CPR() {
     timerOn,
     depthAttempt,
     timingAttempt,
+    overallScore,
     toggleStartAndStop,
   } = useCpr();
 
@@ -33,7 +35,7 @@ export default function CPR() {
         <View
           style={[
             styles.feedbackContainer,
-            { right: 0, backgroundColor: feedback.backgroundColor },
+            { right: 10, backgroundColor: feedback.backgroundColor },
           ]}
         >
           <Text style={styles.depthFeedback}>{feedback.message}</Text>
@@ -41,14 +43,7 @@ export default function CPR() {
       );
     }
 
-    return (
-      <View
-        style={[
-          styles.feedbackContainer,
-          { right: 0, backgroundColor: feedback.backgroundColor },
-        ]}
-      ></View>
-    );
+    return <View style={[styles.feedbackContainer, { right: 10 }]}></View>;
   };
 
   const displayTimingAttemptFeedback = (timing) => {
@@ -58,7 +53,7 @@ export default function CPR() {
       message: "Bad",
     };
 
-    if (timing == "Good") {
+    if (timing == "Perfect") {
       feedback = { backgroundColor: "green", message: "Perfect" };
     } else {
       feedback = { backgroundColor: "red", message: "Bad" };
@@ -70,7 +65,7 @@ export default function CPR() {
         <View
           style={[
             styles.feedbackContainer,
-            { left: 0, backgroundColor: feedback.backgroundColor },
+            { left: 10, backgroundColor: feedback.backgroundColor },
           ]}
         >
           <Text style={styles.timingFeedback}>{feedback.message}</Text>
@@ -78,18 +73,47 @@ export default function CPR() {
       );
     }
 
+    return <View style={[styles.feedbackContainer, { left: 10 }]}></View>;
+  };
+
+  const displayOverallScore = (score) => {
+    const SCORE_BG = {
+      0: "gray",
+      1: "orange",
+      2: "green",
+      3: "red",
+      4: "darkred",
+    };
+
+    //if there is a depthAttempt
+    if (score && score != 0) {
+      return (
+        <View
+          style={[
+            styles.overAllScoreContainer,
+            { backgroundColor: SCORE_BG[score] },
+          ]}
+        >
+          <Text style={styles.overallScore}>{score}</Text>
+        </View>
+      );
+    }
+
     return (
       <View
-        style={[
-          styles.feedbackContainer,
-          { left: 0, backgroundColor: feedback.backgroundColor },
-        ]}
-      ></View>
+        style={[styles.overAllScoreContainer, { backgroundColor: SCORE_BG[0] }]}
+      >
+        <Text style={[styles.overallScore]}>0</Text>
+      </View>
     );
   };
 
   return (
     <View style={styles.container}>
+      <View style={{ alignItems: "center" }}>
+        <ScoringBar score={overallScore} />
+      </View>
+      {displayOverallScore(overallScore)}
       <Text style={styles.text}>Z : {z.toFixed(1)}</Text>
       <Text style={styles.text}>Compression Depth: {depth} in</Text>
       <Text style={styles.text}>Time: {timer}</Text>
@@ -104,14 +128,16 @@ export default function CPR() {
           fontSize: 30,
           fontWeight: "bold",
           position: "absolute",
-          bottom: "40%",
-          right: 50,
+          bottom: "44%",
+          right: 58,
         }}
       >
         {depthAttempt}
       </Text>
       {displayTimingAttemptFeedback(timingAttempt)}
+      <Text style={[styles.attemptFeedbackLabel, { left: 58 }]}>TIMING</Text>
       {displayDepthAttemptFeedback(depthAttempt)}
+      <Text style={[styles.attemptFeedbackLabel, { right: 58 }]}>DEPTH</Text>
     </View>
   );
 }
@@ -139,12 +165,14 @@ const styles = StyleSheet.create({
   },
   feedbackContainer: {
     position: "absolute",
-    bottom: 0,
+    bottom: 24,
     height: 150,
     width: 150,
     borderRadius: 99,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "gray",
   },
   timingFeedback: {
     textAlign: "center",
@@ -157,5 +185,28 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
+  },
+  attemptFeedbackLabel: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+    position: "absolute",
+    bottom: 0,
+  },
+  overAllScoreContainer: {
+    position: "absolute",
+    top: 20,
+    left: "45%",
+    height: 50,
+    width: 100,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 99,
+    borderWidth: 1,
+  },
+  overallScore: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "bold",
   },
 });
