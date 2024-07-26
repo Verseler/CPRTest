@@ -8,16 +8,16 @@ const ScoreBar = ({ score }) => {
 
   const SCORE_PROGRESS_VALUE = {
     0: 0, //0-24
-    1: 27, //25-49
-    2: 50, //50-74
-    3: 75, //75-99
+    1: 26, //25-49
+    2: 48, //50-74
+    3: 70, //75-99
     4: 90, //100
   };
 
   useEffect(() => {
     Animated.timing(progress, {
       toValue: SCORE_PROGRESS_VALUE[score || 0],
-      duration: 5, // Adjust the duration as needed
+      duration: 5,
       useNativeDriver: false,
     }).start();
   }, [score]);
@@ -33,7 +33,13 @@ const ScoreBar = ({ score }) => {
       <View
         style={[
           styles.scoreBox,
-          { backgroundColor: COLORS.gray, left: "0%", width: "17%" },
+          {
+            backgroundColor: COLORS.gray,
+            left: "0%",
+            width: "17%",
+            borderTopLeftRadius: 2,
+            borderBottomLeftRadius: 2,
+          },
         ]}
       />
       <View
@@ -51,13 +57,19 @@ const ScoreBar = ({ score }) => {
       <View
         style={[
           styles.scoreBox,
-          { backgroundColor: COLORS.red, right: "17%", width: "22%" },
+          { backgroundColor: COLORS.red, left: "61%", width: "22%" },
         ]}
       />
       <View
         style={[
           styles.scoreBox,
-          { backgroundColor: COLORS.darkRed, right: 0, width: "17%" },
+          {
+            backgroundColor: COLORS.darkRed,
+            left: "83%",
+            width: "17%",
+            borderTopRightRadius: 2,
+            borderBottomRightRadius: 2,
+          },
         ]}
       />
     </View>
@@ -66,14 +78,15 @@ const ScoreBar = ({ score }) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 35,
-    borderRadius: 6,
+    height: 40,
+    borderRadius: 3,
     margin: 10,
     width: 350,
     position: "relative",
+    borderWidth: 1,
   },
   bar: {
-    height: 35,
+    height: "100%",
     width: 12,
     zIndex: 90,
     position: "absolute",
@@ -83,7 +96,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 2,
   },
   scoreBox: {
-    height: 35,
+    height: "100%",
     position: "absolute",
     top: 0,
     zIndex: 0,

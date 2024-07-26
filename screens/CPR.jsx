@@ -49,19 +49,26 @@ export default function CPR() {
 }
 
 const DisplayDepthAttemptFeedback = ({ depth }) => {
-  //default feedback data
-  let feedback = {
-    backgroundColor: COLORS.yellow,
-    message: "Too little",
+  const feedback_values = {
+    perfect: {
+      backgroundColor: COLORS.green,
+      message: "Perfect",
+    },
+    over: {
+      backgroundColor: COLORS.red,
+      message: "Too much",
+    },
+    under: {
+      backgroundColor: COLORS.yellow,
+      message: "Too little",
+    },
   };
 
-  if (depth >= 2 && depth <= 2.5) {
-    feedback = { backgroundColor: COLORS.green, message: "Perfect" };
-  } else if (depth > 2.5) {
-    feedback = { backgroundColor: COLORS.red, message: "Too much" };
-  } else {
-    feedback = { backgroundColor: COLORS.yellow, message: "Too little" };
-  }
+  let feedback = feedback_values.perfect;
+
+  if (depth >= 2 && depth <= 2.5) feedback = feedback_values.perfect;
+  else if (depth > 2.5) feedback = feedback_values.over;
+  else feedback = feedback_values.under;
 
   //if there is a depthAttempt
   if (depth) {
@@ -81,17 +88,21 @@ const DisplayDepthAttemptFeedback = ({ depth }) => {
 };
 
 const DisplayTimingAttemptFeedback = ({ timing }) => {
-  //default feedback data
-  let feedback = {
-    backgroundColor: COLORS.red,
-    message: "Bad",
+  const feedback_values = {
+    perfect: {
+      backgroundColor: COLORS.green,
+      message: "Perfect",
+    },
+    bad: {
+      backgroundColor: COLORS.red,
+      message: "Bad",
+    },
   };
 
-  if (timing == "Perfect") {
-    feedback = { backgroundColor: COLORS.green, message: "Perfect" };
-  } else {
-    feedback = { backgroundColor: COLORS.red, message: "Bad" };
-  }
+  let feedback = feedback_values.perfect;
+
+  if (timing == "Perfect") feedback = feedback_values.perfect;
+  else feedback = feedback_values.bad;
 
   //if there is a timingAttempt
   if (timing) {
@@ -110,49 +121,19 @@ const DisplayTimingAttemptFeedback = ({ timing }) => {
   return <View style={[styles.feedbackContainer, { left: 10 }]}></View>;
 };
 
-// const DisplayOverallScore = ({ score }) => {
-//   const SCORE_BG = {
-//     0: "gray",
-//     1: "orange",
-//     2: "green",
-//     3: "red",
-//     4: "darkred",
-//   };
-
-//   //if there is a depthAttempt
-//   if (score && score != 0) {
-//     return (
-//       <View
-//         style={[
-//           styles.overAllScoreContainer,
-//           { backgroundColor: SCORE_BG[score] },
-//         ]}
-//       >
-//         <Text style={styles.overallScore}>{score}</Text>
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <View
-//       style={[styles.overAllScoreContainer, { backgroundColor: SCORE_BG[0] }]}
-//     >
-//       <Text style={[styles.overallScore]}>0</Text>
-//     </View>
-//   );
-// };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: 20,
     backgroundColor: "#121212",
+    // backgroundColor: "white",
   },
   text: {
     textAlign: "center",
     fontSize: 20,
     color: "#fff",
+    // color: "black",
   },
   button: {
     width: 300,
@@ -193,20 +174,4 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
   },
-  // overAllScoreContainer: {
-  //   position: "absolute",
-  //   top: 20,
-  //   left: "45%",
-  //   height: 50,
-  //   width: 100,
-  //   justifyContent: "center",
-  //   alignItems: "center",
-  //   borderRadius: 99,
-  //   borderWidth: 1,
-  // },
-  // overallScore: {
-  //   color: "white",
-  //   fontSize: 24,
-  //   fontWeight: "bold",
-  // },
 });
