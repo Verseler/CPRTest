@@ -2,11 +2,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import useCpr from "../hooks/useCpr";
 import ScoringBar from "../components/ScoringBar";
 import COLORS from "../utils/Colors";
+import { useEffect, useState } from "react";
 
 export default function CPR() {
   const {
-    z,
-    depth,
+    depthRef,
     timer,
     timerOn,
     depthAttempt,
@@ -14,13 +14,19 @@ export default function CPR() {
     overallScore,
     toggleStartAndStop,
   } = useCpr();
-  // console.log("CPR is rendered");
+
+  //optional: kung gusto naay depth sa ui
+  const [depth, setDepth] = useState(depthRef.current);
+
+  useEffect(() => {
+    setDepth(depthRef.current);
+  }, [depthRef.current]);
+
   return (
     <View style={styles.container}>
       <View style={{ alignItems: "center", marginBottom: 50 }}>
         <ScoringBar score={overallScore} />
       </View>
-      <Text style={styles.text}>Z : {z.toFixed(1)}</Text>
       <Text style={styles.text}>Compression Depth: {depth} in</Text>
       <Text style={styles.text}>Time: {timer}</Text>
 
@@ -38,7 +44,7 @@ export default function CPR() {
           right: 58,
         }}
       >
-        {depthAttempt}
+        {depthAttempt || "0.0"}
       </Text>
       <DisplayDepthAttemptFeedback depth={depthAttempt} />
       <Text style={[styles.attemptFeedbackLabel, { left: 58 }]}>TIMING</Text>

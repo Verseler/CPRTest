@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Accelerometer } from "expo-sensors";
 
 const useCpr = () => {
   //It determine if there is a subscription to accelerometer. It used to determine if the CPR is started or not
   const [subscription, setSubscription] = useState(null);
   //raw acceleration data. Z value is only used
-  const [{ z }, setData] = useState({ z: 0 });
+  const zRef = useRef(0);
   //previous z value, it is used for calculating the depth
   const [previousZ, setPreviousZ] = useState(1);
   //depth value(inches) on everytime z value changes
-  const [depth, setDepth] = useState(0);
+  const depthRef = useRef(0);
   //depth value on every 0.6 seconds compression attempt
   const [depthAttempt, setDepthAttempt] = useState(null);
   //timing status on every 0.6 seconds compression attempt
@@ -19,13 +19,11 @@ const useCpr = () => {
   //raw timer value
   const [time, setTime] = useState(0);
   //formatted timer value in Minutes:Seconds format
-  const timer = formatTime(time);
+  const timer = useMemo(() => formatTime(time), [time]);
   //reference to the timer. this value will be changed every 1 second
   const timerRef = useRef(null);
   //reference to the compression interval Timer. this value will be changed every 0.6 second
   const compressionIntervalTimerRef = useRef(null);
-  //reference to the depth. This is needed for checking the timing
-  const depthRef = useRef(depth);
 
   //overall scores based on depth and timing
   const [overallScore, setOverallScore] = useState(0);
@@ -50,9 +48,10 @@ const useCpr = () => {
     setSubscription(
       Accelerometer.addListener((data) => {
         // Update the data state with the new accelerometer data
-        setData(data);
+        zRef.current = data.z;
+
         // Calculate the depth based on the new accelerometer data
-        calculateDepth(data);
+        calculateDepth(data.z);
       })
     );
   };
@@ -70,8 +69,8 @@ const useCpr = () => {
     setSubscription(null);
 
     //set Depth and AccelerometerData (or Z) to default value
-    setDepth(0);
-    setData({ z: 1 });
+    depthRef.current = 0;
+    zRef.current = 1;
 
     if (timerRef.current) {
       //clear timer reference interval to avoid bugs
@@ -91,36 +90,37 @@ const useCpr = () => {
    * Calculate the depth using the z accelerometer value
    *
    */
-  const calculateDepth = ({ z }) => {
-    // computes the difference between the current z value and the previous z value
-    const deltaZ = z - previousZ;
-    /**
-     * Adjust this to fine-tune the sensitivity and accuracy of the depth calculation.
-     * the greater the value the more sensitive the calculation is
-     */
-    const calibrationFactor = 4.5;
-    /**
-     * The change in vertical acceleration (deltaZ) is multiplied by the calibrationFactor
-     * to scale the acceleration change into a depth measurement.
-     *
-     * Math.abs() is used to ensure that the depth value is always positive.
-     * Since depth cannot be negative.
-     *
-     * compressionDepth variable represents the estimated depth of the chest
-     * compression based on the current and previous accelerometer readings
-     *
-     */
-    const compressionDepth = Math.abs(deltaZ * calibrationFactor);
-    //set the depth based on computation result
-    setDepth(compressionDepth.toFixed(1));
+  const calculateDepth = useMemo(
+    () => (z) => {
+      // computes the difference between the current z value and the previous z value
+      const deltaZ = z - previousZ;
+      /**
+       * Adjust this to fine-tune the sensitivity and accuracy of the depth calculation.
+       * the greater the value the more sensitive the calculation is
+       */
+      const calibrationFactor = 4.5;
+      /**
+       * The change in vertical acceleration (deltaZ) is multiplied by the calibrationFactor
+       * to scale the acceleration change into a depth measurement.
+       *
+       * Math.abs() is used to ensure that the depth value is always positive.
+       * Since depth cannot be negative.
+       *
+       * compressionDepth variable represents the estimated depth of the chest
+       * compression based on the current and previous accelerometer readings
+       *
+       */
+      const compressionDepth = Math.abs(deltaZ * calibrationFactor);
 
-    //this is needed to be able to see the changes in depth on checkTiming function
-    depthRef.current = compressionDepth.toFixed(1);
+      //this is needed to be able to see the changes in depth on checkTiming function
+      depthRef.current = compressionDepth.toFixed(1);
 
-    //set the previous z value
-    //it is used for calculating the depth next time
-    setPreviousZ(z);
-  };
+      //set the previous z value
+      //it is used for calculating the depth next time
+      setPreviousZ(z);
+    },
+    []
+  );
 
   /**
    *
@@ -158,17 +158,20 @@ const useCpr = () => {
   };
 
   //Get the score based on the depth and timing
-  function getScore(depth, timing) {
-    if (depth < 0.5 && timing == "Bad") return 0;
-    else if (depth >= 0.5 && depth < 2 && timing === "Bad") return 1;
-    else if (depth >= 2 && depth <= 2.5 && timing === "Bad") return 2;
-    else if (depth < 2 && timing == "Perfect") return 2;
-    else if (depth >= 2 && depth <= 2.5 && timing === "Perfect") return 3;
-    else if (depth > 2.5 && timing == "Perfect") return 4;
-    else if (depth > 2.5 && timing == "Bad") return 5;
+  const getScore = useMemo(
+    () => (depth, timing) => {
+      if (depth < 0.5 && timing == "Bad") return 0;
+      else if (depth >= 0.5 && depth < 2 && timing === "Bad") return 1;
+      else if (depth >= 2 && depth <= 2.5 && timing === "Bad") return 2;
+      else if (depth < 2 && timing == "Perfect") return 2;
+      else if (depth >= 2 && depth <= 2.5 && timing === "Perfect") return 3;
+      else if (depth > 2.5 && timing == "Perfect") return 4;
+      else if (depth > 2.5 && timing == "Bad") return 5;
 
-    return 0;
-  }
+      return 0;
+    },
+    []
+  );
 
   //This where timer counting happens
   useEffect(() => {
@@ -177,12 +180,10 @@ const useCpr = () => {
       timerRef.current = setInterval(() => {
         setTime((prevTime) => prevTime + 1);
       }, 1000);
-
       //everytime timerOn is true, start the compression timer counting to
       //determine the interval between each compression
-      compressionIntervalTimerRef.current = setInterval(() => {
-        checkTiming(); // Check for timing every 600ms or 0.6 seconds
-      }, 600);
+      // Check for timing every 600ms or 0.6 seconds
+      compressionIntervalTimerRef.current = setInterval(checkTiming, 600);
     } else {
       //clean up timer interval when timerOn is false
       if (timerRef.current) {
@@ -216,8 +217,7 @@ const useCpr = () => {
   };
 
   return {
-    z,
-    depth,
+    depthRef,
     timer,
     timerOn,
     depthAttempt,
