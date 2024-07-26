@@ -159,12 +159,13 @@ const useCpr = () => {
 
   //Get the score based on the depth and timing
   function getScore(depth, timing) {
-    if (depth < 2 && timing == "Bad") return 0;
-    else if (depth >= 2 && depth <= 2.5 && timing === "Bad") return 1;
-    else if (depth < 2 && timing == "Perfect") return 1;
-    else if (depth >= 2 && depth <= 2.5 && timing === "Perfect") return 2;
-    else if (depth > 2.5 && timing == "Perfect") return 3;
-    else if (depth > 2.5 && timing == "Bad") return 4;
+    if (depth < 0.5 && timing == "Bad") return 0;
+    else if (depth >= 0.5 && depth < 2 && timing === "Bad") return 1;
+    else if (depth >= 2 && depth <= 2.5 && timing === "Bad") return 2;
+    else if (depth < 2 && timing == "Perfect") return 2;
+    else if (depth >= 2 && depth <= 2.5 && timing === "Perfect") return 3;
+    else if (depth > 2.5 && timing == "Perfect") return 4;
+    else if (depth > 2.5 && timing == "Bad") return 5;
 
     return 0;
   }

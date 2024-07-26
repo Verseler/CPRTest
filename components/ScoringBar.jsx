@@ -7,11 +7,12 @@ const ScoreBar = ({ score }) => {
   const [progress, setProgress] = useState(new Animated.Value(0));
 
   const SCORE_PROGRESS_VALUE = {
-    0: 0, //0-24
-    1: 26, //25-49
-    2: 48, //50-74
-    3: 70, //75-99
-    4: 90, //100
+    0: 0, //0
+    1: 5, //8-24
+    2: 26, //25-49
+    3: 48, //50-74
+    4: 70, //75-99
+    5: 90, //100
   };
 
   useEffect(() => {
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
   },
   bar: {
     height: "100%",
-    width: 12,
+    width: 18,
     zIndex: 90,
     position: "absolute",
     top: 0,

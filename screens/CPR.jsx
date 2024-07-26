@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "gray",
+    backgroundColor: "gray",
   },
   timingFeedback: {
     textAlign: "center",
