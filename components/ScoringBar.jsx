@@ -7,12 +7,12 @@ const ScoreBar = ({ score }) => {
   const [progress, setProgress] = useState(new Animated.Value(0));
 
   const SCORE_PROGRESS_VALUE = {
-    0: 0, //0
-    1: 5, //8-24
-    2: 23, //25-49
-    3: 46, //50-74
-    4: 68, //75-99
-    5: 90, //100
+    0: 0,
+    1: 5, 
+    2: 24, 
+    3: 46, 
+    4: 68, 
+    5: 90, 
   };
 
   useEffect(() => {

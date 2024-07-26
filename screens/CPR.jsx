@@ -112,17 +112,12 @@ const DisplayTimingAttemptFeedback = ({ timing }) => {
       backgroundColor: COLORS.red,
       message: "Bad",
     },
-    inactive: {
-      backgroundColor: "gray",
-      message: "",
-    },
   };
 
   let feedback = feedback_values.perfect;
 
   if (timing == "Perfect") feedback = feedback_values.perfect;
-  else if (timing == "Bad") feedback = feedback_values.bad;
-  else feedback = feedback_values.inactive;
+  else feedback = feedback_values.bad;
 
   //if there is a timingAttempt
   if (timing) {
