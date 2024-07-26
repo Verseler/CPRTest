@@ -132,10 +132,12 @@ const useCpr = () => {
     if (timerOn) {
       //if the depth is greater than 1 inch, it means that compression is performed
       //during the time this function is called
-      if (depthRef.current >= 1) {
+      if (depthRef.current >= 0.5) {
         setTimingAttempt("Perfect");
-      } else {
+      } else if (depthRef.current > 0 && depthRef.current < 0.5) {
         setTimingAttempt("Bad");
+      } else {
+        setTimingAttempt("Inactive");
       }
 
       //set the depthAttempt to the latest depth value

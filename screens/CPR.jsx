@@ -68,13 +68,18 @@ const DisplayDepthAttemptFeedback = ({ depth }) => {
       backgroundColor: COLORS.yellow,
       message: "Too little",
     },
+    inactive: {
+      backgroundColor: "gray",
+      message: "",
+    },
   };
 
   let feedback = feedback_values.perfect;
 
   if (depth >= 2 && depth <= 2.5) feedback = feedback_values.perfect;
   else if (depth > 2.5) feedback = feedback_values.over;
-  else feedback = feedback_values.under;
+  else if (depth > 0 && depth < 2) feedback = feedback_values.under;
+  else feedback = feedback_values.inactive;
 
   //if there is a depthAttempt
   if (depth) {
@@ -85,12 +90,16 @@ const DisplayDepthAttemptFeedback = ({ depth }) => {
           { right: 10, backgroundColor: feedback.backgroundColor },
         ]}
       >
-        <Text style={styles.depthFeedback}>{feedback.message}</Text>
+        <Text style={styles.feedbackLabel}>{feedback.message}</Text>
       </View>
     );
   }
 
-  return <View style={[styles.feedbackContainer, { right: 10 }]}></View>;
+  return (
+    <View style={[styles.feedbackContainer, { right: 10 }]}>
+      <Text style={styles.feedbackLabel}></Text>
+    </View>
+  );
 };
 
 const DisplayTimingAttemptFeedback = ({ timing }) => {
@@ -103,12 +112,17 @@ const DisplayTimingAttemptFeedback = ({ timing }) => {
       backgroundColor: COLORS.red,
       message: "Bad",
     },
+    inactive: {
+      backgroundColor: "gray",
+      message: "",
+    },
   };
 
   let feedback = feedback_values.perfect;
 
   if (timing == "Perfect") feedback = feedback_values.perfect;
-  else feedback = feedback_values.bad;
+  else if (timing == "Bad") feedback = feedback_values.bad;
+  else feedback = feedback_values.inactive;
 
   //if there is a timingAttempt
   if (timing) {
@@ -119,12 +133,16 @@ const DisplayTimingAttemptFeedback = ({ timing }) => {
           { left: 10, backgroundColor: feedback.backgroundColor },
         ]}
       >
-        <Text style={styles.timingFeedback}>{feedback.message}</Text>
+        <Text style={styles.feedbackLabel}>{feedback.message}</Text>
       </View>
     );
   }
 
-  return <View style={[styles.feedbackContainer, { left: 10 }]}></View>;
+  return (
+    <View style={[styles.feedbackContainer, { left: 10 }]}>
+      <Text style={styles.feedbackLabel}></Text>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -161,13 +179,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "gray",
   },
-  timingFeedback: {
-    textAlign: "center",
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "white",
-  },
-  depthFeedback: {
+  feedbackLabel: {
     textAlign: "center",
     fontSize: 24,
     fontWeight: "bold",

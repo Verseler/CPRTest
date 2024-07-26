@@ -9,16 +9,16 @@ const ScoreBar = ({ score }) => {
   const SCORE_PROGRESS_VALUE = {
     0: 0, //0
     1: 5, //8-24
-    2: 26, //25-49
-    3: 48, //50-74
-    4: 70, //75-99
+    2: 23, //25-49
+    3: 46, //50-74
+    4: 68, //75-99
     5: 90, //100
   };
 
   useEffect(() => {
     Animated.timing(progress, {
       toValue: SCORE_PROGRESS_VALUE[score || 0],
-      duration: 5,
+      duration: 10,
       useNativeDriver: false,
     }).start();
   }, [score]);
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   bar: {
     height: "100%",
-    width: 18,
+    width: 24,
     zIndex: 90,
     position: "absolute",
     top: 0,
