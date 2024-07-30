@@ -2,38 +2,40 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Accelerometer } from "expo-sensors";
 
 const useCpr = () => {
-  //It determine if there is a subscription to accelerometer. It used to determine if the CPR is started or not
+  //It determine if there is a subscription to accelerometer.
+  // in the other word it determine if the CPR is started or not
   const [subscription, setSubscription] = useState(null);
-  //raw acceleration data. Z value is only used
+
+  //raw acceleration z data
   const zRef = useRef(0);
-  //previous z value, it is used for calculating the depth
+  //previous z value, it is used for next depth computation
   const [previousZ, setPreviousZ] = useState(1);
-  //depth value(inches) on everytime z value changes
+  //depth value(in) results from depth computation
   const depthRef = useRef(0);
-  //depth value on every 0.6 seconds compression attempt
-  const [depthAttempt, setDepthAttempt] = useState(null);
-  //timing status on every 0.6 seconds compression attempt
-  const [timingAttempt, setTimingAttempt] = useState(null);
+
+  //timer for compression attempt where the value will be changed every 0.6 seconds
+  //this is use as timer for compression attempt that happens every 0.6 seconds
+  const compressionIntervalTimerRef = useRef(null);
+
+  //timer for time where the value will be changed every 1 second
+  //this is use for computing the time value
+  const timerRef = useRef(null);
   //boolean value that determine if the timer started or not
   const [timerOn, setTimerOn] = useState(false);
   //raw timer value
   const [time, setTime] = useState(0);
   //formatted timer value in Minutes:Seconds format
   const timer = useMemo(() => formatTime(time), [time]);
-  //reference to the timer. this value will be changed every 1 second
-  const timerRef = useRef(null);
-  //reference to the compression interval Timer. this value will be changed every 0.6 second
-  const compressionIntervalTimerRef = useRef(null);
 
-  //overall scores based on depth and timing
-  const [overallScore, setOverallScore] = useState(0);
-  //every time timingAttempt and depthAttempt changes which means every 0.6 seconds, this function will be called
-  //the overall score will be updated based on the depth and timing
-  useEffect(() => {
-    if (timingAttempt != null && depthAttempt != null) {
-      setOverallScore(getScore(depthAttempt, timingAttempt));
-    }
-  }, [timingAttempt, depthAttempt]);
+  const DEFAULT_COMPRESSION_ATTEMPT = {
+    depthAttempt: null,
+    depthScore: null,
+    timingScore: null,
+    overallScore: null,
+  };
+  const [compressionAttempt, setCompressionAttempt] = useState(
+    DEFAULT_COMPRESSION_ATTEMPT
+  );
 
   /**
    *
@@ -70,6 +72,10 @@ const useCpr = () => {
     depthRef.current = 0;
     zRef.current = 1;
 
+    if (compressionIntervalTimerRef.current) {
+      clearInterval(compressionIntervalTimerRef.current);
+    }
+
     if (timerRef.current) {
       //clear timer reference interval to avoid bugs
       clearInterval(timerRef.current);
@@ -79,7 +85,7 @@ const useCpr = () => {
 
       //set timingAttempt to null or default value
       //this remove the unchanged timingAttempt value bugs
-      setTimingAttempt(null);
+      setCompressionAttempt(DEFAULT_COMPRESSION_ATTEMPT);
     }
   };
 
@@ -121,72 +127,91 @@ const useCpr = () => {
 
   /**
    *
-   * Check timing
+   * get the  current compression depth, timing and overall score
    * this will only be called every 600 miliseconds or 0.6 seconds
    *
    */
-  const getAttemptScore = () => {
-    /*
-     *
-     * Get Timing Attempt Score
-     *
-     */
+  const getCurrentCompressionAttemptScore = () => {
     if (timerOn) {
-      /**
-       * if the depth is greater than 1 inch, it means that compression is performed
-       * during the time this function is called
-       * if depth is greater than 0.1 inch, it means that compression is performed
-       * therefore the user perform a compression during the 0.6 interval which mean the
-       * timing is perfect
-       */
-      if (depthRef.current >= 0.1) {
-        setTimingAttempt("Perfect");
-      } else {
-        setTimingAttempt("Bad");
-      }
+      const depthAttempt = depthRef.current;
+      const depthScore = getDepthScore(depthAttempt);
+      const timingScore = getTimingScore(depthAttempt);
+      const overallScore = getOverallScore(depthScore, timingScore);
+      setCompressionAttempt({
+        depthAttempt,
+        depthScore,
+        timingScore,
+        overallScore,
+      });
 
-      /*
-       *
-       * Get Depth Attempt Score
-       *
-       */
-      setDepthAttempt(depthRef.current);
       /**
-       *
-       * after 100ms or 0.1 seconds set the timingAttempt and depthAttempt to null or their default value
-       * its purpose is to remove the timing and depth attempt value when 0.6 seconds have passed
-       * so that the UI only the display the timing and depth attempt value on every 0.6 seconds interval
-       *
-       * if this code is not present the UI will display the latest timing and depth attempt value always
-       * where it supposed to only be displayed every 0.6 seconds interval
+       * after 300ms or 0.3 seconds reset the value of compression attempt so that
+       * in the ui the compression values such as depth score, timing score, and overall score
+       * will be removed.
        */
       setTimeout(() => {
-        setTimingAttempt(null);
-        setDepthAttempt(null);
-        setOverallScore(null);
-      }, 100);
+        setCompressionAttempt(DEFAULT_COMPRESSION_ATTEMPT);
+      }, 300);
     }
   };
 
-  //Get the score based on the depth and timing
-  const getScore = useMemo(
-    () => (depth, timing) => {
-      if (depth < 0.3 && timing == "Bad") return 0;
-      else if (depth >= 0.3 && depth < 2 && timing == "Bad") return 1;
-      else if (depth >= 0.3 && depth < 2 && timing == "Perfect") return 2;
-      else if (depth >= 2 && depth <= 2.5 && timing == "Bad") return 2;
-      else if (depth >= 2 && depth <= 2.5 && timing == "Perfect") return 3;
-      else if (depth > 2.5 && timing == "Perfect") return 4;
-      else if (depth > 2.5 && timing == "Bad") return 5;
+  /**
+   *
+   * get the  timing score based on the depth
+   *
+   */
+  const getTimingScore = (depth) => {
+    /**
+     * if during the 0.6 interval or the attempt time
+     * if there is no changes or the depth is less than 0.5 inches which means there is changes
+     * but it is not considered as performing a compression
+     * which means that during the attempt time the user did not perform compression
+     *
+     * 0.3 inches depth and above are considered performing a compression
+     *
+     */
+    return depth >= 0.5 ? "Perfect" : "Bad";
+  };
 
-      return 0;
-    },
-    []
-  );
+  /**
+   *
+   * get the depth score based on the depth
+   *
+   */
+  const getDepthScore = (depth) => {
+    //2 - 2.5 inches are recommended depth for each compression
+    if (depth >= 2 && depth <= 2.5) return "Perfect";
+    else if (depth > 2.5) return "Too much";
+    else if (depth >= 0.5 && depth < 2) return "Too little";
 
-  //This where timer counting happens
+    //if depth is below 0 - 0.4 inches it is considered inactive
+    //or the user did'nt perform a compression during the attempt time
+    return "Inactive";
+  };
+
+  /**
+   *
+   * get the overall score based on the depth score and timing score
+   *
+   */
+  const getOverallScore = (depthScore, timingScore) => {
+    if (depthScore == "Inactive") return 0;
+    else if (depthScore == "Too little" && timingScore == "Bad") return 1;
+    else if (depthScore == "Too little" && timingScore == "Perfect") return 2;
+    else if (depthScore == "Too little" && timingScore == "Bad") return 2;
+    else if (depthScore == "Perfect" && timingScore == "Perfect") return 3;
+    else if (depthScore == "Too much" && timingScore == "Perfect") return 4;
+    else if (depthScore == "Too much" && timingScore == "Bad") return 5;
+
+    return 0;
+  };
+
+  /**
+   *
+   * This is where timer counting happens
+   *
+   */
   useEffect(() => {
-    //everytime timerOn is true, start the timer counting
     if (timerOn) {
       timerRef.current = setInterval(() => {
         setTime((prevTime) => prevTime + 1);
@@ -194,7 +219,10 @@ const useCpr = () => {
       //everytime timerOn is true, start the compression timer counting to
       //determine the interval between each compression
       // Check for timing every 600ms or 0.6 seconds
-      compressionIntervalTimerRef.current = setInterval(getAttemptScore, 600);
+      compressionIntervalTimerRef.current = setInterval(
+        getCurrentCompressionAttemptScore,
+        600
+      );
     } else {
       //clean up timer interval when timerOn is false
       if (timerRef.current) {
@@ -228,13 +256,10 @@ const useCpr = () => {
   };
 
   return {
-    depthRef,
     timer,
     timerOn,
-    depthAttempt,
-    timingAttempt,
-    overallScore,
     toggleStartAndStop,
+    compressionAttempt,
   };
 };
 
