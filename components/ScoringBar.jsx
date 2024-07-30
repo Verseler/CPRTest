@@ -5,14 +5,13 @@ import COLORS from "../utils/Colors";
 
 const ScoreBar = ({ score }) => {
   const [progress, setProgress] = useState(new Animated.Value(0));
-
   const SCORE_PROGRESS_VALUE = {
     0: 0,
-    1: 5, 
-    2: 24, 
-    3: 46, 
-    4: 68, 
-    5: 90, 
+    1: 5,
+    2: 24,
+    3: 46,
+    4: 68,
+    5: 90,
   };
 
   useEffect(() => {
@@ -27,49 +26,40 @@ const ScoreBar = ({ score }) => {
     inputRange: [0, 100],
     outputRange: ["0%", "100%"],
   });
-
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.bar, { left: progressPosition }]} />
+
       <View
         style={[
           styles.scoreBox,
           {
             backgroundColor: COLORS.gray,
-            left: "0%",
             width: "17%",
-            borderTopLeftRadius: 2,
-            borderBottomLeftRadius: 2,
           },
         ]}
       />
       <View
         style={[
           styles.scoreBox,
-          { backgroundColor: COLORS.yellow, left: "17%", width: "22%" },
+          { backgroundColor: COLORS.yellow, width: "22%" },
         ]}
       />
       <View
         style={[
           styles.scoreBox,
-          { backgroundColor: COLORS.green, left: "39%", width: "22%" },
+          { backgroundColor: COLORS.green, width: "22%" },
         ]}
       />
       <View
-        style={[
-          styles.scoreBox,
-          { backgroundColor: COLORS.red, left: "61%", width: "22%" },
-        ]}
+        style={[styles.scoreBox, { backgroundColor: COLORS.red, width: "22%" }]}
       />
       <View
         style={[
           styles.scoreBox,
           {
             backgroundColor: COLORS.darkRed,
-            left: "83%",
             width: "17%",
-            borderTopRightRadius: 2,
-            borderBottomRightRadius: 2,
           },
         ]}
       />
@@ -83,23 +73,20 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     margin: 10,
     width: 350,
-    position: "relative",
-    borderWidth: 1,
+    borderWidth: 2,
+    flexDirection: "row",
   },
   bar: {
-    height: "100%",
+    height: 46,
     width: 24,
     zIndex: 90,
     position: "absolute",
-    top: 0,
+    bottom: -5,
     backgroundColor: "white",
-    borderRightWidth: 2,
-    borderLeftWidth: 2,
+    borderWidth: 3,
   },
   scoreBox: {
     height: "100%",
-    position: "absolute",
-    top: 0,
     zIndex: 0,
   },
 });

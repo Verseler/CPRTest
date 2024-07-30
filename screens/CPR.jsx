@@ -2,7 +2,6 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import useCpr from "../hooks/useCpr";
 import ScoringBar from "../components/ScoringBar";
 import COLORS from "../utils/Colors";
-import { useEffect, useState } from "react";
 
 export default function CPR() {
   const {
@@ -16,40 +15,53 @@ export default function CPR() {
   } = useCpr();
 
   //optional: kung gusto naay depth sa ui
-  const [depth, setDepth] = useState(depthRef.current);
+  // const [depth, setDepth] = useState(depthRef.current);
 
-  useEffect(() => {
-    setDepth(depthRef.current);
-  }, [depthRef.current]);
+  // useEffect(() => {
+  //   setDepth(depthRef.current);
+  // }, [depthRef.current]);
 
   return (
     <View style={styles.container}>
-      <View style={{ alignItems: "center", marginBottom: 50 }}>
-        <ScoringBar score={overallScore} />
+      <View style={styles.header}>
+        <Text style={styles.text}>LK</Text>
+        <Text style={styles.timer}>{timer}</Text>
+        <TouchableOpacity onPress={toggleStartAndStop} style={styles.button}>
+          <Text>{timerOn ? "Stop" : "Start"}</Text>
+        </TouchableOpacity>
       </View>
-      <Text style={styles.text}>Compression Depth: {depth} in</Text>
-      <Text style={styles.text}>Time: {timer}</Text>
 
-      <TouchableOpacity onPress={toggleStartAndStop} style={styles.button}>
-        <Text>{timerOn ? "Stop" : "Start"}</Text>
-      </TouchableOpacity>
+      <View style={styles.body}>
+        <View style={{ alignItems: "center", marginTop: 20 }}>
+          <ScoringBar score={overallScore} />
+        </View>
 
-      <Text
-        style={{
-          color: "white",
-          fontSize: 30,
-          fontWeight: "bold",
-          position: "absolute",
-          bottom: "44%",
-          right: 58,
-        }}
-      >
-        {depthAttempt || "0.0"}
-      </Text>
-      <DisplayDepthAttemptFeedback depth={depthAttempt} />
-      <Text style={[styles.attemptFeedbackLabel, { left: 58 }]}>TIMING</Text>
-      <DisplayTimingAttemptFeedback timing={timingAttempt} />
-      <Text style={[styles.attemptFeedbackLabel, { right: 58 }]}>DEPTH</Text>
+        <View style={styles.metricsContainer}>
+          <View style={styles.metricContainer}>
+            <View style={styles.smallCircle}>
+              <Text style={styles.depth}>?</Text>
+            </View>
+            <Text style={styles.feedbackLabel}>?</Text>
+          </View>
+
+          <View style={styles.metricContainer}>
+            <DisplayTimingAttemptFeedback timing={timingAttempt} />
+            <Text style={styles.feedbackLabel}>TIMING SCORE</Text>
+          </View>
+
+          <View style={styles.metricContainer}>
+            <DisplayDepthAttemptFeedback depth={depthAttempt} />
+            <Text style={styles.feedbackLabel}>DEPTH SCORE</Text>
+          </View>
+
+          <View style={styles.metricContainer}>
+            <View style={styles.smallCircle}>
+              <Text style={styles.depth}>{depthAttempt || "0.0"}</Text>
+            </View>
+            <Text style={styles.feedbackLabel}>DEPTH (in)</Text>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
@@ -62,11 +74,11 @@ const DisplayDepthAttemptFeedback = ({ depth }) => {
     },
     over: {
       backgroundColor: COLORS.red,
-      message: "Too much",
+      message: "Too Much",
     },
     under: {
       backgroundColor: COLORS.yellow,
-      message: "Too little",
+      message: "Too   Little",
     },
     inactive: {
       backgroundColor: "gray",
@@ -87,17 +99,17 @@ const DisplayDepthAttemptFeedback = ({ depth }) => {
       <View
         style={[
           styles.feedbackContainer,
-          { right: 10, backgroundColor: feedback.backgroundColor },
+          { backgroundColor: feedback.backgroundColor },
         ]}
       >
-        <Text style={styles.feedbackLabel}>{feedback.message}</Text>
+        <Text style={styles.feedbackScore}>{feedback.message}</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.feedbackContainer, { right: 10 }]}>
-      <Text style={styles.feedbackLabel}></Text>
+    <View style={styles.feedbackContainer}>
+      <Text style={styles.feedbackScore}></Text>
     </View>
   );
 };
@@ -125,17 +137,17 @@ const DisplayTimingAttemptFeedback = ({ timing }) => {
       <View
         style={[
           styles.feedbackContainer,
-          { left: 10, backgroundColor: feedback.backgroundColor },
+          { backgroundColor: feedback.backgroundColor },
         ]}
       >
-        <Text style={styles.feedbackLabel}>{feedback.message}</Text>
+        <Text style={styles.feedbackScore}>{feedback.message}</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.feedbackContainer, { left: 10 }]}>
-      <Text style={styles.feedbackLabel}></Text>
+    <View style={styles.feedbackContainer}>
+      <Text style={styles.feedbackScore}></Text>
     </View>
   );
 };
@@ -143,48 +155,92 @@ const DisplayTimingAttemptFeedback = ({ timing }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     paddingHorizontal: 20,
-    backgroundColor: "#121212",
-    // backgroundColor: "white",
+    // backgroundColor: "#121212", dark mode background
+  },
+  header: {
+    height: 60,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  button: {
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "lightgray",
+    padding: 10,
+  },
+  timer: {
+    textAlign: "center",
+    fontSize: 28,
+    color: "#111",
+  },
+
+  body: {
+    flex: 1,
+    rowGap: 14,
+  },
+  metricsContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    columnGap: 16,
+    paddingBottom: 10,
+  },
+  metricContainer: {
+    alignItems: "center",
+    rowGap: 10,
+  },
+  feedbackContainer: {
+    height: 190,
+    width: 190,
+    maxHeight: "100%",
+    borderRadius: 99,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "gray",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  feedbackLabel: {
+    color: "red",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  feedbackScore: {
+    textAlign: "center",
+    fontSize: 38,
+    fontWeight: "bold",
+    color: "white",
+  },
+
+  smallCircle: {
+    height: 130,
+    width: 130,
+    borderRadius: 99,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "gray",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  depth: {
+    fontSize: 40,
+    fontWeight: "500",
+    color: "white",
   },
   text: {
     textAlign: "center",
     fontSize: 20,
-    color: "#fff",
-    // color: "black",
-  },
-  button: {
-    width: 300,
-    maxWidth: "90%",
-    alignSelf: "center",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#eee",
-    padding: 10,
-  },
-  feedbackContainer: {
-    position: "absolute",
-    bottom: 24,
-    height: 150,
-    width: 150,
-    borderRadius: 99,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    backgroundColor: "gray",
-  },
-  feedbackLabel: {
-    textAlign: "center",
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
-  },
-  attemptFeedbackLabel: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "bold",
-    position: "absolute",
-    bottom: 0,
+    color: "#111",
   },
 });
