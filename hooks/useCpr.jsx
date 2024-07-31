@@ -205,7 +205,7 @@ const useCpr = () => {
 
     return 0;
   };
-
+  console.log(1);
   /**
    *
    * This is where timer counting happens

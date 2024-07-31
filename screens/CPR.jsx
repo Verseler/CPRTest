@@ -1,10 +1,20 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import useCpr from "../hooks/useCpr";
+import useCpr2 from "../hooks/useCpr2";
+import useCpr3 from "../hooks/useCpr3";
 import ScoringBar from "../components/ScoringBar";
 import COLORS from "../utils/Colors";
 
 export default function CPR() {
-  const { timer, timerOn, toggleStartAndStop, compressionAttempt } = useCpr();
+  // const { timer, timerOn, toggleStartAndStop, compressionAttempt } = useCpr();
+  // const {
+  //   time: timer,
+  //   active: timerOn,
+  //   toggleStartAndStop,
+  //   compressionAttempt,
+  // } = useCpr2();
+  const { timer, timerOn, toggleStartAndStop, compressionAttempt, depth } =
+    useCpr3();
 
   const { depthAttempt, depthScore, timingScore, overallScore } =
     compressionAttempt;
@@ -45,7 +55,27 @@ export default function CPR() {
 
           <View style={styles.metricContainer}>
             <View style={styles.smallCircle}>
-              <Text style={styles.depth}>{depthAttempt || "0.0"}</Text>
+              {depthAttempt ? (
+                <Text
+                  style={[
+                    styles.depth,
+                    {
+                      color:
+                        depthScore == "Perfect"
+                          ? COLORS.green
+                          : depthScore == "Too much"
+                          ? COLORS.red
+                          : depthScore == "Too little"
+                          ? COLORS.yellow
+                          : COLORS.white,
+                    },
+                  ]}
+                >
+                  {depthAttempt}
+                </Text>
+              ) : (
+                <Text style={styles.depth}>{depth}</Text>
+              )}
             </View>
             <Text style={styles.feedbackLabel}>DEPTH (in)</Text>
           </View>
@@ -99,9 +129,7 @@ const DepthScoreUI = ({ depthScore }) => {
           { backgroundColor: BG_COLOR[depthScore] },
         ]}
       >
-        <Text style={styles.feedbackScore}>
-          {depthScore != "Inactive" && depthScore}
-        </Text>
+        <Text style={styles.feedbackScore}>{depthScore && depthScore}</Text>
       </View>
     );
   }
