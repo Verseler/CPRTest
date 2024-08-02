@@ -4,7 +4,6 @@ import useCpr2 from "../hooks/useCpr2";
 import useCpr3 from "../hooks/useCpr3";
 import ScoringBar from "../components/ScoringBar";
 import COLORS from "../utils/Colors";
-import CycleTimer from "../components/CycleTimer";
 
 export default function CPR() {
   // const { timer, timerOn, toggleStartAndStop, compressionAttempt } = useCpr();
@@ -14,14 +13,27 @@ export default function CPR() {
   //   toggleStartAndStop,
   //   compressionAttempt,
   // } = useCpr2();
-  const { timer, msCounter, timerOn, toggleStartAndStop, compressionAttempt, depth } =
+  const { timer, timerOn, toggleStartAndStop, compressionAttemptScore, depth } =
     useCpr3();
-  console.log(msCounter)
+
   const { depthAttempt, depthScore, timingScore, overallScore } =
-    compressionAttempt;
+    compressionAttemptScore;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          borderColor:
+            overallScore === 3
+              ? "#4BB543"
+              : overallScore >= 4
+              ? "red"
+              : "transparent",
+          borderWidth: overallScore >= 3 ? 8 : 8,
+        },
+      ]}
+    >
       <View style={styles.header}>
         {/* <Text style={styles.timer}>{timer}</Text> */}
         <TouchableOpacity onPress={toggleStartAndStop} style={styles.button}>

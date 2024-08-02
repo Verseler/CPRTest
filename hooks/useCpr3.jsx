@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, useCallback, act } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { Accelerometer } from "expo-sensors";
 
 const useCpr2 = () => {
@@ -21,35 +21,64 @@ const useCpr2 = () => {
     overallScore: null,
   };
   //store all scores for every compression attempt
-  const [compressionAttempt, setCompressionAttempt] = useState(
+  const [compressionAttemptScore, setCompressionAttemptScore] = useState(
     DEFAULT_COMPRESSION_ATTEMPT
   );
+  //previous compression attempt score
+  const prevScores = useRef(0);
 
   //This is where counting happens
   useEffect(() => {
     if (timerOn) {
       timerRef.current = setInterval(() => {
+        //this update the timer for every 100ms
         setTime((prevTime) => prevTime + 100);
+
+        //msCounter or milisecondsCounter is used to count the time between 0.1 to 6 second
+        //is purpose is to determine the time the compression attempt should be perform
+        //because the compression attempt is need to be performed every 0.6 second based on 120 compression per minute
         msCounter.current += 100;
+
+        //every 0.5 second an audio cue will be played
+        //i allocate an advance 100ms to play the audio cue a bit a advance so that the user has a small time to react
+        if (msCounter.current === 500) {
+          if (prevScores.current.overallScore == 1) {
+            console.log("audio cue: Push Faster");
+          } else if (prevScores.current.overallScore == 2) {
+            console.log("audio cue: Push Harder");
+          } else if (
+            prevScores.current.depthScore == "Perfect" &&
+            prevScores.current.timingScore == "Bad"
+          ) {
+            console.log("audio cue: Push Faster");
+          } else if (prevScores.current.overallScore >= 4) {
+            console.log("audio cue: Push Softly");
+          } else {
+            //overallScore == 3 or else
+            console.log("audio cue: Push");
+          }
+        }
+        if (msCounter.current === 600) {
+          //clean up purpose
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+          //every 0.6 the timing and depth score will be calculated
+          timeoutRef.current = setTimeout(getCompressionAttemptScore, 100);
+        }
+
+        //every 1 second the msCounter will be reset
+        if (msCounter.current > 600) msCounter.current = 0;
       }, 100);
     }
+
     //clean up
     else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     }
-
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [timerOn]);
 
@@ -66,26 +95,6 @@ const useCpr2 = () => {
     []
   );
 
-  useEffect(() => {
-    //msCounter or milisecondsCounter is used to count the time between 0.1 to 1 second
-
-    //every 0.5 second an audio cue will be played
-    if (msCounter.current === 500) {
-      // console.log("audio cue: Push");
-
-      //clean up purpose
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-      //every 0.6 the timing and depth score will be calculated
-      timeoutRef.current = setTimeout(getCompressionAttemptScore, 100);
-    }
-
-    //every 1 second the msCounter will be reset
-    if (msCounter.current === 1000) {
-      msCounter.current = 0;
-    }
-  }, [time]);
-
   //calculate the timing, depth, and overall score
   const getCompressionAttemptScore = () => {
     if (timerOn) {
@@ -94,18 +103,23 @@ const useCpr2 = () => {
       const timingScore = getTimingScore(depthAttempt);
       const overallScore = getOverallScore(depthScore, timingScore);
 
-      setCompressionAttempt({
+      const currentScore = {
         depthAttempt,
         depthScore,
         timingScore,
         overallScore,
-      });
+      };
+      //set current compression attempt score
+      setCompressionAttemptScore(currentScore);
+
+      //record the previous compression attempt score
+      prevScores.current = currentScore;
 
       //this determine the duration the scores will be displayed
       //after 300ms or 0.3 seconds reset the value of compression attempt so that
       setTimeout(() => {
-        setCompressionAttempt(DEFAULT_COMPRESSION_ATTEMPT);
-      }, 300);
+        setCompressionAttemptScore(DEFAULT_COMPRESSION_ATTEMPT);
+      }, 200);
     }
   };
 
@@ -135,6 +149,7 @@ const useCpr2 = () => {
     setSubscription(null);
     depth.current = 0;
     z.current = 1;
+    msCounter.current = 0;
 
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -143,7 +158,7 @@ const useCpr2 = () => {
       clearInterval(timerRef.current);
       setTimerOn(false);
       setTime(0);
-      setCompressionAttempt(DEFAULT_COMPRESSION_ATTEMPT);
+      setCompressionAttemptScore(DEFAULT_COMPRESSION_ATTEMPT);
     }
   };
 
@@ -158,19 +173,19 @@ const useCpr2 = () => {
     timer,
     msCounter,
     toggleStartAndStop,
-    compressionAttempt,
+    compressionAttemptScore,
     depth: depth.current,
   };
 };
 
 export default useCpr2;
 
-const getTimingScore = (depth) => (depth >= 0.5 ? "Perfect" : "Bad");
+const getTimingScore = (depth) => (depth >= 0.3 ? "Perfect" : "Bad");
 
 const getDepthScore = (depth) => {
   if (depth >= 2 && depth <= 2.5) return "Perfect";
   else if (depth > 2.5) return "Too much";
-  else if (depth >= 0.2 && depth < 2) return "Too little";
+  else if (depth >= 0.3 && depth < 2) return "Too little";
   return "Inactive";
 };
 
@@ -178,7 +193,7 @@ const getOverallScore = (depthScore, timingScore) => {
   if (depthScore == "Inactive") return 0;
   else if (depthScore == "Too little" && timingScore == "Bad") return 1;
   else if (depthScore == "Too little" && timingScore == "Perfect") return 2;
-  else if (depthScore == "Too little" && timingScore == "Bad") return 2;
+  else if (depthScore == "Perfect" && timingScore == "Bad") return 2;
   else if (depthScore == "Perfect" && timingScore == "Perfect") return 3;
   else if (depthScore == "Too much" && timingScore == "Perfect") return 4;
   else if (depthScore == "Too much" && timingScore == "Bad") return 5;

@@ -7,17 +7,17 @@ const ScoreBar = ({ score }) => {
   const [progress, setProgress] = useState(new Animated.Value(0));
   const SCORE_PROGRESS_VALUE = {
     0: 0,
-    1: 5,
-    2: 24,
-    3: 46,
-    4: 68,
-    5: 90,
+    1: 7,
+    2: 27,
+    3: 47,
+    4: 67,
+    5: 87,
   };
 
   useEffect(() => {
     Animated.timing(progress, {
       toValue: SCORE_PROGRESS_VALUE[score || 0],
-      duration: 200,
+      duration: 15,
       useNativeDriver: false,
     }).start();
   }, [score]);
@@ -35,31 +35,31 @@ const ScoreBar = ({ score }) => {
           styles.scoreBox,
           {
             backgroundColor: COLORS.gray,
-            width: "17%",
+            width: "20%",
           },
         ]}
       />
       <View
         style={[
           styles.scoreBox,
-          { backgroundColor: COLORS.yellow, width: "22%" },
+          { backgroundColor: COLORS.yellow, width: "20%" },
         ]}
       />
       <View
         style={[
           styles.scoreBox,
-          { backgroundColor: COLORS.green, width: "22%" },
+          { backgroundColor: COLORS.green, width: "20%" },
         ]}
       />
       <View
-        style={[styles.scoreBox, { backgroundColor: COLORS.red, width: "22%" }]}
+        style={[styles.scoreBox, { backgroundColor: COLORS.red, width: "20%" }]}
       />
       <View
         style={[
           styles.scoreBox,
           {
             backgroundColor: COLORS.darkRed,
-            width: "17%",
+            width: "20%",
           },
         ]}
       />
