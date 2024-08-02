@@ -4,6 +4,7 @@ import useCpr2 from "../hooks/useCpr2";
 import useCpr3 from "../hooks/useCpr3";
 import ScoringBar from "../components/ScoringBar";
 import COLORS from "../utils/Colors";
+import CycleTimer from "../components/CycleTimer";
 
 export default function CPR() {
   // const { timer, timerOn, toggleStartAndStop, compressionAttempt } = useCpr();
@@ -13,9 +14,9 @@ export default function CPR() {
   //   toggleStartAndStop,
   //   compressionAttempt,
   // } = useCpr2();
-  const { timer, timerOn, toggleStartAndStop, compressionAttempt, depth } =
+  const { timer, msCounter, timerOn, toggleStartAndStop, compressionAttempt, depth } =
     useCpr3();
-
+  console.log(msCounter)
   const { depthAttempt, depthScore, timingScore, overallScore } =
     compressionAttempt;
 

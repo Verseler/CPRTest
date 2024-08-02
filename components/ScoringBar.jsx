@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, StyleSheet, Animated } from "react-native";
+import { View, StyleSheet, Animated, Easing } from "react-native";
 
 import COLORS from "../utils/Colors";
 
@@ -17,7 +17,7 @@ const ScoreBar = ({ score }) => {
   useEffect(() => {
     Animated.timing(progress, {
       toValue: SCORE_PROGRESS_VALUE[score || 0],
-      duration: 10,
+      duration: 200,
       useNativeDriver: false,
     }).start();
   }, [score]);

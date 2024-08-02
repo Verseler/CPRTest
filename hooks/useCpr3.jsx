@@ -73,14 +73,11 @@ const useCpr2 = () => {
     if (msCounter.current === 500) {
       // console.log("audio cue: Push");
 
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      //clean up purpose
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
       //every 0.6 the timing and depth score will be calculated
-      timeoutRef.current = setTimeout(() => {
-        // console.log("compression Attempt");
-        getCompressionAttemptScore();
-      }, 100);
+      timeoutRef.current = setTimeout(getCompressionAttemptScore, 100);
     }
 
     //every 1 second the msCounter will be reset
@@ -159,6 +156,7 @@ const useCpr2 = () => {
   return {
     timerOn,
     timer,
+    msCounter,
     toggleStartAndStop,
     compressionAttempt,
     depth: depth.current,
