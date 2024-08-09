@@ -13,7 +13,7 @@ export const getTimingScore = (depth) => (depth >= 0.2 ? "Perfect" : "Bad");
 export const getDepthScore = (depth) => {
   if (depth >= 2 && depth <= 2.5) return "Perfect";
   else if (depth > 2.5) return "Too much";
-  else if (depth >= 0.3 && depth < 2) return "Too little";
+  else if (depth >= 0.2 && depth < 2) return "Too little";
   return "Inactive";
 };
 
@@ -30,6 +30,7 @@ export const getOverallScore = (depthScore, timingScore) => {
 };
 
 export const playAudioCue = (prevScores) => {
+  
   if (prevScores.current.overallScore == 1) {
     console.log("audio cue: Push Faster");
   } else if (prevScores.current.overallScore == 2) {
