@@ -15,10 +15,6 @@ const DEFAULT_COMPRESSION_ATTEMPT = {
   overallScore: 0,
 };
 
-const filterAcceleration = (value, prevFilteredValue, alpha = 0.1) => {
-  return alpha * value + (1 - alpha) * prevFilteredValue;
-};
-
 const useCpr3 = () => {
   const [subscription, setSubscription] = useState(null);
   const prevZ = useRef(0); //previous z value after each depth calculation
@@ -40,30 +36,31 @@ const useCpr3 = () => {
   //This is where counting happens
   useEffect(() => {
     if (timerOn) {
+      const startTime = Date.now(); // Track start time
+
       timerRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTime; // Calculate elapsed time
+
         //this update the timer for every 100ms
-        setTime((prevTime) => prevTime + 100);
-
+        setTime(elapsed);
         //msCounter or milisecondsCounter is used to count the time between 0.1 to 6 second
-        //is purpose is to determine the time the compression attempt should be perform
+        //its purpose is to determine the time the compression attempt should be performed
         //because the compression attempt is need to be performed every 0.6 second based on 120 compression per minute
-        msCounter.current += 100;
-
+        msCounter.current = elapsed % 600;
+        console.log(msCounter.current);
         //every 0.5 second an audio cue will be played
-        //i allocate an advance 100ms to play the audio cue a bit a advance so that the user has a small time to react
-        if (msCounter.current === 500) {
+        //i allocate an advance 100ms to play the audio cue a bit in advance so that the user has a small time to react
+        if (msCounter.current >= 500 && msCounter.current < 600) {
           playAudioCue(prevScores);
         }
-        if (msCounter.current === 600) {
-          //every 0.6 the timing and depth score will be calculated
+
+        //every 0.6 second the timing and depth score will be calculated
+        if (msCounter.current >= 600 || msCounter.current < 100) {
+          msCounter.current = 100; // Reset msCounter to start the next cycle
           getCompressionAttemptScore();
         }
-
-        //after reaching 6 seconds the timer will be reset
-        if (msCounter.current > 600) msCounter.current = 0;
       }, 100);
     }
-
     //clean up
     else if (timerRef.current) clearInterval(timerRef.current);
 
@@ -76,7 +73,7 @@ const useCpr3 = () => {
   const calculateDepth = (z) => {
     //computes the difference between the current z value and the previous z value
     const deltaZ = z - prevZ.current;
-    //Adjust this to fine-tune the sensitivity and accuracy of the depth calculation
+    /* Adjust this to fine-tune the sensitivity and accuracy of the depth calculation  */
     const calibrationFactor = 3; // Empirical value for scaling
     const gForceToInches = 0.3937; // Approximate conversion factor for g-force to inches
 
