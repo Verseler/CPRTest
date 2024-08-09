@@ -1,3 +1,47 @@
+import { Audio } from "expo-av";
+
+export const playAudioCue = async (prevScores) => {
+  let soundFile;
+
+  // Determine which audio file to play based on the conditions
+  if (prevScores.current.overallScore == 1) {
+    console.log("audio cue: Push Faster");
+    soundFile = require("../assets/audio/push.mp3");
+  } else if (prevScores.current.overallScore == 2) {
+    console.log("audio cue: Push Harder");
+    soundFile = require("../assets/audio/push.mp3");
+  } else if (
+    prevScores.current.depthScore == "Perfect" &&
+    prevScores.current.timingScore == "Bad"
+  ) {
+    console.log("audio cue: Push Faster");
+    soundFile = require("../assets/audio/push.mp3");
+  } else if (prevScores.current.overallScore >= 4) {
+    console.log("audio cue: Push Softly");
+    soundFile = require("../assets/audio/push.mp3");
+  } else {
+    // overallScore == 3 or else
+    console.log("audio cue: Push");
+    soundFile = require("../assets/audio/push.mp3");
+  }
+
+  // Play the selected audio file
+  try {
+    const { sound } = await Audio.Sound.createAsync(soundFile, {
+      shouldPlay: true,
+    });
+
+    // Automatically unload the sound when done playing to free up resources
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (status.didJustFinish) {
+        sound.unloadAsync();
+      }
+    });
+  } catch (error) {
+    console.error("Error playing sound:", error);
+  }
+};
+
 export const formatTime = (time) => {
   const totalSeconds = Math.floor(time / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -27,23 +71,4 @@ export const getOverallScore = (depthScore, timingScore) => {
   else if (depthScore == "Too much" && timingScore == "Bad") return 5;
 
   return 0;
-};
-
-export const playAudioCue = (prevScores) => {
-  
-  if (prevScores.current.overallScore == 1) {
-    console.log("audio cue: Push Faster");
-  } else if (prevScores.current.overallScore == 2) {
-    console.log("audio cue: Push Harder");
-  } else if (
-    prevScores.current.depthScore == "Perfect" &&
-    prevScores.current.timingScore == "Bad"
-  ) {
-    console.log("audio cue: Push Faster");
-  } else if (prevScores.current.overallScore >= 4) {
-    console.log("audio cue: Push Softly");
-  } else {
-    //overallScore == 3 or else
-    console.log("audio cue: Push");
-  }
 };
