@@ -7,6 +7,7 @@ import {
   getTimingScore,
   playAudioCue,
 } from "./helper";
+import usePreloadedAudio from "./usePreloadedAudio";
 
 const DEFAULT_COMPRESSION_ATTEMPT = {
   depthAttempt: 0,
@@ -33,6 +34,8 @@ const useCpr3 = () => {
   //previous compression attempt score
   const prevScores = useRef(0);
 
+  const soundsRef = usePreloadedAudio(); // Load the audio files
+
   //This is where counting happens
   useEffect(() => {
     if (timerOn) {
@@ -49,9 +52,9 @@ const useCpr3 = () => {
         msCounter.current = elapsed % 600;
         console.log(msCounter.current);
         //every 0.5 second an audio cue will be played
-        //i allocate an advance 100ms to play the audio cue a bit in advance so that the user has a small time to react
-        if (msCounter.current >= 500 && msCounter.current < 600) {
-          playAudioCue(prevScores);
+        //i allocate an advance 200ms to play the audio cue a bit in advance so that the user has a small time to react
+        if (msCounter.current >= 400 && msCounter.current < 600) {
+          playAudioCue(prevScores, soundsRef);
         }
 
         //every 0.6 second the timing and depth score will be calculated

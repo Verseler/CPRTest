@@ -1,42 +1,36 @@
-import { Audio } from "expo-av";
-
-export const playAudioCue = async (prevScores) => {
-  let soundFile;
+export const playAudioCue = async (prevScores, soundsRef) => {
+  let soundName;
 
   // Determine which audio file to play based on the conditions
-  if (prevScores.current.overallScore == 1) {
+  if (prevScores.current.overallScore === 1) {
     console.log("audio cue: Push Faster");
-    soundFile = require("../assets/audio/push.mp3");
-  } else if (prevScores.current.overallScore == 2) {
+    soundName = "pushFaster";
+  } else if (prevScores.current.overallScore === 2) {
     console.log("audio cue: Push Harder");
-    soundFile = require("../assets/audio/push.mp3");
+    soundName = "pushHarder";
   } else if (
-    prevScores.current.depthScore == "Perfect" &&
-    prevScores.current.timingScore == "Bad"
+    prevScores.current.depthScore === "Perfect" &&
+    prevScores.current.timingScore === "Bad"
   ) {
     console.log("audio cue: Push Faster");
-    soundFile = require("../assets/audio/push.mp3");
+    soundName = "pushFaster";
   } else if (prevScores.current.overallScore >= 4) {
     console.log("audio cue: Push Softly");
-    soundFile = require("../assets/audio/push.mp3");
+    soundName = "pushSoftly";
   } else {
     // overallScore == 3 or else
     console.log("audio cue: Push");
-    soundFile = require("../assets/audio/push.mp3");
+    soundName = "push";
   }
 
   // Play the selected audio file
   try {
-    const { sound } = await Audio.Sound.createAsync(soundFile, {
-      shouldPlay: true,
-    });
-
-    // Automatically unload the sound when done playing to free up resources
-    sound.setOnPlaybackStatusUpdate((status) => {
-      if (status.didJustFinish) {
-        sound.unloadAsync();
-      }
-    });
+    const sound = soundsRef.current[soundName];
+    if (sound) {
+      await sound.replayAsync(); // Play immediately from the preloaded sound
+    } else {
+      console.error("Sound not found:", soundName);
+    }
   } catch (error) {
     console.error("Error playing sound:", error);
   }
