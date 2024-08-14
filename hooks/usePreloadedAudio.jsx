@@ -1,5 +1,6 @@
 import { Audio } from "expo-av";
 import { useEffect, useRef } from "react";
+import { Alert } from "react-native";
 
 const usePreloadedAudio = () => {
   const soundsRef = useRef({});
@@ -29,7 +30,7 @@ const usePreloadedAudio = () => {
           await soundsRef.current[name].setStatusAsync({ shouldPlay: false });
         }
       } catch (error) {
-        console.error("Error preloading sound:", error);
+        Alert.alert(`Error preloading sound: ${error}`);
       }
     };
 

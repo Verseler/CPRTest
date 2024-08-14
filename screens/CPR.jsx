@@ -6,18 +6,11 @@ import ScoringBar from "../components/ScoringBar";
 import COLORS from "../utils/Colors";
 
 export default function CPR() {
-  // const { timer, timerOn, toggleStartAndStop, compressionAttempt } = useCpr();
-  // const {
-  //   time: timer,
-  //   active: timerOn,
-  //   toggleStartAndStop,
-  //   compressionAttempt,
-  // } = useCpr2();
-  const { timer, timerOn, toggleStartAndStop, compressionAttemptScore, depth } =
+  const { timer, timerOn, toggleStartAndStop, currentCompressionScore, depth } =
     useCpr3();
 
   const { depthAttempt, depthScore, timingScore, overallScore } =
-    compressionAttemptScore;
+    currentCompressionScore;
 
   return (
     <View

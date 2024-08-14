@@ -1,25 +1,18 @@
 export const playAudioCue = async (prevScores, soundsRef) => {
+  const { depthScore, timingScore, overallScore } = prevScores.current;
   let soundName;
 
   // Determine which audio file to play based on the conditions
-  if (prevScores.current.overallScore === 1) {
-    console.log("audio cue: Push Faster");
+  if (overallScore === 1) {
     soundName = "pushFaster";
-  } else if (prevScores.current.overallScore === 2) {
-    console.log("audio cue: Push Harder");
+  } else if (overallScore === 2) {
     soundName = "pushHarder";
-  } else if (
-    prevScores.current.depthScore === "Perfect" &&
-    prevScores.current.timingScore === "Bad"
-  ) {
-    console.log("audio cue: Push Faster");
+  } else if (depthScore === "Perfect" && timingScore === "Bad") {
     soundName = "pushFaster";
-  } else if (prevScores.current.overallScore >= 4) {
-    console.log("audio cue: Push Softly");
+  } else if (overallScore >= 4) {
     soundName = "pushSoftly";
   } else {
     // overallScore == 3 or else
-    console.log("audio cue: Push");
     soundName = "push";
   }
 
