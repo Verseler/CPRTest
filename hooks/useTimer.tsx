@@ -1,14 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { formatTime } from "./helper";
 
-export default function useTimer() {
-  const [timerOn, setTimerOn] = useState(false);
-  const timerRef = useRef(null); //reference for timer
-  const [time, setTime] = useState(0); //raw time value that increments every 100ms
-  const timer = formatTime(time); //formatted time value in readable format
-  const msCounter = useRef(0); //timer for every 0.6 second. It is use as counter to determine when to play the audio cue and get compression attempt score
+type Timer = {
+  timerOn: boolean;
+  timer: string;
+  msCounter: number;
+  setTimerOn: React.Dispatch<React.SetStateAction<boolean>>;
+  resetTimer: () => void;
+  resetMsCounter: () => void;
+};
 
-  //This is where counting happens
+export default function useTimer(): Timer {
+  const [timerOn, setTimerOn] = useState<boolean>(false);
+  const timerRef = useRef<number>(0);
+  const [time, setTime] = useState<number>(0); //raw time value that increments every 100ms
+  const timer: string = formatTime(time); //formatted time value with readable format
+  const msCounter = useRef<number>(0); //timer for every 0.6 second. It is use as counter to determine when to play the audio cue and get compression attempt score
+
   useEffect(() => {
     if (timerOn) {
       const startTime = Date.now();
@@ -23,7 +31,7 @@ export default function useTimer() {
         //msCounter or milisecondsCounter is used to count the time between 0.1 to 6 second
         //its purpose is to determine the time the compression attempt should be performed
         //because the compression attempt is needed to be performed every 0.6 second based on 120 compression per minute
-        msCounter.current = elapsed % 600;
+        msCounter.current += 100;
       }, 100);
     }
     //clean up
@@ -34,7 +42,7 @@ export default function useTimer() {
     };
   }, [timerOn]);
 
-  const resetTimer = () => {
+  const resetTimer = (): void => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       setTimerOn(false);
@@ -43,7 +51,7 @@ export default function useTimer() {
     }
   };
 
-  const resetMsCounter = () => {
+  const resetMsCounter = (): void => {
     msCounter.current = 0;
   };
 
