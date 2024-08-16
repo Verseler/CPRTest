@@ -12,9 +12,9 @@ import { type Compression } from "./useCpr.types";
 
 const DEFAULT_COMPRESSION: Compression = {
   depthAttempt: 0,
-  depthScore: "",
-  timingScore: "",
-  overallScore: "",
+  depthScore: null,
+  timingScore: null,
+  overallScore: null,
 };
 
 const useCpr = () => {
@@ -43,10 +43,10 @@ const useCpr = () => {
   }, [timerOn, msCounter]);
 
   const calculateDepth = (z: number): void => {
-    const deltaZ = z - prevZ.current;
-    const calibrationFactor = 3;
-    const gForceToInches = 0.3937;
-    const compressionDepth = Math.abs(
+    const deltaZ: number = z - prevZ.current;
+    const calibrationFactor: number = 3;
+    const gForceToInches: number = 0.3937;
+    const compressionDepth: number = Math.abs(
       deltaZ * calibrationFactor * gForceToInches
     );
     depth.current = Number(compressionDepth.toFixed(1));
@@ -72,7 +72,7 @@ const useCpr = () => {
 
       setTimeout(() => {
         setCurrentCompressionScore(DEFAULT_COMPRESSION);
-      }, 100);
+      }, 200);
     }
   };
 

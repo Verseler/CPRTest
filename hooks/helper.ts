@@ -1,22 +1,33 @@
 import { MutableRefObject } from "react";
-import { type Compression, type TSoundRef, type SoundCue } from "./useCpr.types";
+import { type Compression, type TSoundRef, type SoundCue, type Score, type TimingScore } from "./useCpr.types";
 import { Alert } from "react-native";
+
+/*
+ * 
+ * In playing audio cue, the timingScore is prioritize 
+ * 
+ * 
+ */
 export const playAudioCue = async (
   prevScores: MutableRefObject<Compression>,
   soundsRef: MutableRefObject<TSoundRef>
 ): Promise<void> => {
-  const { depthScore, timingScore, overallScore } = prevScores.current;
+  const { depthScore, timingScore } = prevScores.current;
   let soundCue: SoundCue = "push";
 
-  if (overallScore === "0" || overallScore === "1") {
-    soundCue = "pushFaster";
-  } else if (depthScore == "Too little" && timingScore == "Perfect") {
+  if(timingScore === "green" && depthScore === "yellow") {
     soundCue = "pushHarder";
-  } else if (depthScore === "Perfect" && timingScore === "Bad") {
-    soundCue = "pushFaster";
-  } else if (overallScore >= "4") {
+  }
+  else if(timingScore === "green" && depthScore === "red") {
     soundCue = "pushSoftly";
-  } else {
+  }
+  else if(timingScore === "red" && (depthScore === "green" || depthScore === "yellow" || depthScore === "red" || depthScore === "gray")) {
+    soundCue = "pushFaster";
+  }
+  else if(timingScore === "gray" && depthScore === "gray") {
+    soundCue = "push";
+  }
+  else {
     soundCue = "push";
   }
 
@@ -25,14 +36,46 @@ export const playAudioCue = async (
     if (sound) {
       await sound.replayAsync();
     } else {
-      console.error("Sound not found:", soundCue);
       Alert.alert(`Sound not found: ${soundCue}`);
     }
   } catch (error) {
-    console.error("Error playing sound:", error);
     Alert.alert(`Error playing sound: ${error}`);
   }
 };
+
+
+export const getTimingScore = (depth: number): TimingScore => {
+  if(depth === 0) return "gray";
+  else if (depth >= 0.2) return "green";
+
+  return "red";
+};
+
+export const getDepthScore = (depth: number): Score => {
+  if(depth >= 0 && depth < 0.2) return "gray";
+  else if(depth >= 0.2 && depth < 2) return "yellow";
+  else if(depth >= 2 && depth <= 2.5) return "green";
+
+  //else depth is greater than 2.5
+  return "red";
+};
+
+export const getOverallScore = (depthScore: Score, timingScore: TimingScore): Score => {
+  if(depthScore === "gray" && timingScore === "gray") return "gray";
+  else if(depthScore === "gray" && timingScore === "green") return "gray"; //! impossible
+  else if(depthScore === "gray" && timingScore === "red") return "gray"; 
+  else if(depthScore === "yellow" && timingScore === "gray") return "yellow";
+  else if(depthScore === "green" && timingScore === "gray") return "yellow"; //! impossible
+  else if(depthScore === "green" && timingScore === "green") return "green";
+  else if (depthScore === "green" && timingScore === "red") return "yellow";
+  else if (depthScore === "yellow" && timingScore === "red") return "yellow";
+  else if (depthScore === "yellow" && timingScore === "green") return "yellow";
+  else if (depthScore === "red" && timingScore === "green") return "red";
+  else if(depthScore === "red" && timingScore === "red") return "red";
+ 
+  return "green";
+};
+
 
 export const formatTime = (time: number): string => {
   const totalSeconds: number = Math.floor(time / 1000);
@@ -42,25 +85,4 @@ export const formatTime = (time: number): string => {
   return `${minutes < 10 ? "0" : ""}${minutes}:${
     seconds < 10 ? "0" : ""
   }${seconds}`;
-};
-
-export const getTimingScore = (depth: number): string => (depth >= 0.2 ? "Perfect" : "Bad");
-
-export const getDepthScore = (depth: number): string => {
-  if (depth >= 2 && depth <= 2.5) return "Perfect";
-  else if (depth > 2.5) return "Too much";
-  else if (depth >= 0.2 && depth < 2) return "Too little";
-  return "Inactive";
-};
-
-export const getOverallScore = (depthScore: string, timingScore: string): string => {
-  if (depthScore == "Inactive") return "0";
-  else if (depthScore == "Too little" && timingScore == "Bad") return "1";
-  else if (depthScore == "Too little" && timingScore == "Perfect") return "2";
-  else if (depthScore == "Perfect" && timingScore == "Bad") return "2";
-  else if (depthScore == "Perfect" && timingScore == "Perfect") return "3";
-  else if (depthScore == "Too much" && timingScore == "Perfect") return "4";
-  else if (depthScore == "Too much" && timingScore == "Bad") return "5";
-
-  return "0";
 };

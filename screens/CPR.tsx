@@ -1,7 +1,13 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import useCpr from "../hooks/useCpr";
-import ScoringBar from "../components/ScoringBar";
-import COLORS from "../utils/Colors";
+import OverallScoreBar from "../components/OverallScoreBar";
+// import COLORS from "../utils/Colors";
+import { type TimingScore, type Score } from "../hooks/useCpr.types";
+import {
+  type TimingScoreUIProps,
+  type DepthScoreUIProps,
+  Colors,
+} from "./cpr.types";
 
 export default function CPR() {
   const { timer, timerOn, toggleStartAndStop, currentCompressionScore, depth } =
@@ -16,17 +22,15 @@ export default function CPR() {
         styles.container,
         {
           borderColor:
-            overallScore === 3
+            overallScore === "green"
               ? "#4BB543"
-              : overallScore >= 4
+              : overallScore === "red"
               ? "red"
               : "transparent",
-          borderWidth: overallScore >= 3 ? 8 : 8,
         },
       ]}
     >
       <View style={styles.header}>
-        {/* <Text style={styles.timer}>{timer}</Text> */}
         <TouchableOpacity onPress={toggleStartAndStop} style={styles.button}>
           <Text>{timerOn ? "Stop" : "Start"}</Text>
         </TouchableOpacity>
@@ -34,7 +38,7 @@ export default function CPR() {
 
       <View style={styles.body}>
         <View style={{ alignItems: "center" }}>
-          <ScoringBar score={overallScore} />
+          <OverallScoreBar score={overallScore} />
         </View>
 
         <View style={styles.metricsContainer}>
@@ -48,12 +52,12 @@ export default function CPR() {
           </View>
 
           <View style={styles.metricContainer}>
-            <TimingScoreUI timingScore={timingScore} />
+            <TimingScoreUI score={timingScore} />
             <Text style={styles.feedbackLabel}>TIMING SCORE</Text>
           </View>
 
           <View style={styles.metricContainer}>
-            <DepthScoreUI depthScore={depthScore} />
+            <DepthScoreUI score={depthScore} />
             <Text style={styles.feedbackLabel}>DEPTH SCORE</Text>
           </View>
 
@@ -65,13 +69,13 @@ export default function CPR() {
                     styles.depth,
                     {
                       color:
-                        depthScore == "Perfect"
-                          ? COLORS.green
-                          : depthScore == "Too much"
-                          ? COLORS.red
-                          : depthScore == "Too little"
-                          ? COLORS.yellow
-                          : COLORS.white,
+                        depthScore == "green"
+                          ? Colors.green
+                          : depthScore == "red"
+                          ? Colors.red
+                          : depthScore == "yellow"
+                          ? Colors.yellow
+                          : Colors.white,
                     },
                   ]}
                 >
@@ -89,22 +93,28 @@ export default function CPR() {
   );
 }
 
-const TimingScoreUI = ({ timingScore }) => {
-  const BG_COLOR = {
-    Perfect: COLORS.green,
-    Bad: COLORS.red,
+const TimingScoreUI = ({ score }: TimingScoreUIProps) => {
+  const BG_COLOR: Record<TimingScore, string> = {
+    gray: Colors.gray,
+    green: Colors.green,
+    red: Colors.red,
+  };
+
+  const TIMING_SCORE_MESSAGE = {
+    gray: "INACTIVE",
+    green: "PERFECT",
+    red: "BAD",
   };
 
   //if there is a timingAttempt or score
-  if (timingScore) {
+  if (score) {
     return (
       <View
-        style={[
-          styles.feedbackContainer,
-          { backgroundColor: BG_COLOR[timingScore] },
-        ]}
+        style={[styles.feedbackContainer, { backgroundColor: BG_COLOR[score] }]}
       >
-        <Text style={styles.feedbackScore}>{timingScore}</Text>
+        <Text style={styles.feedbackScore}>
+          {score && TIMING_SCORE_MESSAGE[score]}
+        </Text>
       </View>
     );
   }
@@ -116,24 +126,30 @@ const TimingScoreUI = ({ timingScore }) => {
   );
 };
 
-const DepthScoreUI = ({ depthScore }) => {
-  const BG_COLOR = {
-    Perfect: COLORS.green,
-    "Too much": COLORS.red,
-    "Too little": COLORS.yellow,
-    Inactive: "gray",
+const DepthScoreUI = ({ score }: DepthScoreUIProps) => {
+  const BG_COLOR: Record<Score, string> = {
+    gray: Colors.gray,
+    green: Colors.green,
+    red: Colors.red,
+    yellow: Colors.yellow,
+  };
+
+  const DEPTH_SCORE_MESSAGE = {
+    gray: "INACTIVE",
+    green: "PERFECT",
+    red: "TO0 MUCH",
+    yellow: "TOO LITTLE",
   };
 
   //if there is a depthAttempt or score
-  if (depthScore) {
+  if (score) {
     return (
       <View
-        style={[
-          styles.feedbackContainer,
-          { backgroundColor: BG_COLOR[depthScore] },
-        ]}
+        style={[styles.feedbackContainer, { backgroundColor: BG_COLOR[score] }]}
       >
-        <Text style={styles.feedbackScore}>{depthScore && depthScore}</Text>
+        <Text style={styles.feedbackScore}>
+          {score && DEPTH_SCORE_MESSAGE[score]}
+        </Text>
       </View>
     );
   }
@@ -149,6 +165,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
+    borderWidth: 8,
   },
   header: {
     height: 56,
@@ -208,7 +225,7 @@ const styles = StyleSheet.create({
   },
   feedbackScore: {
     textAlign: "center",
-    fontSize: 38,
+    fontSize: 32,
     fontWeight: "bold",
     color: "white",
   },
