@@ -1,7 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import useCpr from "../hooks/useCpr";
 import OverallScoreBar from "../components/OverallScoreBar";
-// import COLORS from "../utils/Colors";
 import { type TimingScore, type Score } from "../hooks/useCpr.types";
 import {
   type TimingScoreUIProps,
@@ -21,12 +20,7 @@ export default function CPR() {
       style={[
         styles.container,
         {
-          borderColor:
-            overallScore === "green"
-              ? "#4BB543"
-              : overallScore === "red"
-              ? "red"
-              : "transparent",
+          borderColor: overallScore === "green" ? Colors.green : "transparent",
         },
       ]}
     >

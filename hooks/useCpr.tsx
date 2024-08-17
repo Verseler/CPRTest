@@ -22,29 +22,24 @@ const useCpr = () => {
   const [subscription, setSubscription] = useState<boolean>(false);
   const prevZ = useRef<number>(0);
   const depth = useRef<number>(0);
-
   const { msCounter, timer, timerOn, setTimerOn, resetTimer, resetMsCounter } =
     useTimer();
 
   const [currentCompressionScore, setCurrentCompressionScore] =
     useState<Compression>(DEFAULT_COMPRESSION);
-  const prevCompressionScore = useRef<Compression>(DEFAULT_COMPRESSION);
+  const prevCompressionScore = useRef<Compression>(DEFAULT_COMPRESSION); //it is used for voice cue
 
   useEffect(() => {
     if (timerOn) {
-      if (msCounter === 500) {
-        playAudioCue(prevCompressionScore, soundsRef);
-      }
-      if (msCounter >= 600) {
-        resetMsCounter();
-        getCompressionScore();
-      }
+      if (msCounter === 500) playAudioCue(prevCompressionScore, soundsRef);
+      else if (msCounter === 600) getCompressionScore();
+      if (msCounter >= 600) resetMsCounter();
     }
   }, [timerOn, msCounter]);
 
   const calculateDepth = (z: number): void => {
     const deltaZ: number = z - prevZ.current;
-    const calibrationFactor: number = 3;
+    const calibrationFactor: number = 4.5;
     const gForceToInches: number = 0.3937;
     const compressionDepth: number = Math.abs(
       deltaZ * calibrationFactor * gForceToInches
@@ -72,12 +67,13 @@ const useCpr = () => {
 
       setTimeout(() => {
         setCurrentCompressionScore(DEFAULT_COMPRESSION);
-      }, 200);
+      }, 150);
     }
   };
 
   const subscribe = (): void => {
     Accelerometer.setUpdateInterval(16);
+
     const subscription = Accelerometer.addListener((data) => {
       calculateDepth(data.z);
     });
