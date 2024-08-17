@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { formatTime } from "./helper";
 
 type Timer = {
@@ -13,9 +13,9 @@ type Timer = {
 export default function useTimer(): Timer {
   const [timerOn, setTimerOn] = useState<boolean>(false);
   const timerRef = useRef<number>(0);
-  const [time, setTime] = useState<number>(0); //raw time value that increments every 100ms
-  const timer: string = formatTime(time); //formatted time value with readable format
-  const msCounter = useRef<number>(0); //timer for every 0.6 second. It is use as counter to determine when to play the audio cue and get compression attempt score
+  const [rawTimer, setRawTimer] = useState<number>(0); //raw time value that increments every 100ms
+  const timer: string = useMemo(() => formatTime(rawTimer), [rawTimer]); //formatted time value with readable format
+  const msCounter = useRef<number>(100); //timer for every 0.6 second. It is use as counter to determine when to play the audio cue and get compression attempt score
 
   useEffect(() => {
     if (timerOn) {
@@ -26,7 +26,7 @@ export default function useTimer(): Timer {
         const elapsed = Date.now() - startTime;
 
         //this update the timer for every 100ms
-        setTime(elapsed);
+        setRawTimer(elapsed);
 
         //msCounter or milisecondsCounter is used to count the time between 0.1 to 6 second
         //its purpose is to determine the time the compression attempt should be performed
@@ -46,13 +46,13 @@ export default function useTimer(): Timer {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       setTimerOn(false);
-      setTime(0);
+      setRawTimer(0);
       resetMsCounter();
     }
   };
 
   const resetMsCounter = (): void => {
-    msCounter.current = 0;
+    msCounter.current = 100;
   };
 
   return {
