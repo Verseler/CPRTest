@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Alert } from "react-native";
+import { ToastAndroid } from "react-native";
 import { Audio, AVPlaybackSource } from "expo-av";
 import { type TSoundRef, type SoundFile } from "./useCpr.types";
 
@@ -33,8 +33,9 @@ const usePreloadedAudio = () => {
           await soundsRef.current[name].loadAsync(file);
           await soundsRef.current[name].setStatusAsync({ shouldPlay: false });
         }
-      } catch (error) {
-        Alert.alert(`Error preloading sound: ${error}`);
+      } catch (err: unknown) {
+        const error = err as Error;
+        ToastAndroid.show(`${error.message}`, ToastAndroid.SHORT);
       }
     };
 
