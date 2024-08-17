@@ -1,6 +1,6 @@
 import { MutableRefObject } from "react";
 import { type Compression, type TSoundRef, type SoundCue, type Score, type TimingScore } from "./useCpr.types";
-import { Alert } from "react-native";
+import { ToastAndroid } from "react-native";
 
 /*
  * 
@@ -36,24 +36,26 @@ export const playAudioCue = async (
     if (sound) {
       await sound.replayAsync();
     } else {
-      Alert.alert(`Sound not found: ${soundCue}`);
+      ToastAndroid.show(`Sound not found: ${soundCue}`, ToastAndroid.SHORT);
     }
-  } catch (error) {
-    Alert.alert(`Error playing sound: ${error}`);
+  } catch (err: unknown) {
+    const error = err as Error;
+    ToastAndroid.show(`${error.message}`, ToastAndroid.SHORT);
   }
 };
 
 
 export const getTimingScore = (depth: number): TimingScore => {
   if(depth === 0) return "gray";
-  else if (depth >= 0.2) return "green";
-
-  return "red";
+  else if(depth > 0 && depth < 0.2) return "red";
+ 
+   //else depth is greater than or equal to 0.2
+  return "green";
 };
 
 export const getDepthScore = (depth: number): Score => {
-  if(depth >= 0 && depth < 0.2) return "gray";
-  else if(depth >= 0.2 && depth < 2) return "yellow";
+  if(depth === 0) return "gray";
+  else if(depth > 0 && depth < 2) return "yellow";
   else if(depth >= 2 && depth <= 2.5) return "green";
 
   //else depth is greater than 2.5
@@ -62,10 +64,10 @@ export const getDepthScore = (depth: number): Score => {
 
 export const getOverallScore = (depthScore: Score, timingScore: TimingScore): Score => {
   if(depthScore === "gray" && timingScore === "gray") return "gray";
-  else if(depthScore === "gray" && timingScore === "green") return "gray"; //! impossible
+  else if(depthScore === "gray" && timingScore === "green") return "gray"; //! impossible to meet the condition
   else if(depthScore === "gray" && timingScore === "red") return "gray"; 
   else if(depthScore === "yellow" && timingScore === "gray") return "yellow";
-  else if(depthScore === "green" && timingScore === "gray") return "yellow"; //! impossible
+  else if(depthScore === "green" && timingScore === "gray") return "yellow"; //! impossible to meet the condition
   else if(depthScore === "green" && timingScore === "green") return "green";
   else if (depthScore === "green" && timingScore === "red") return "yellow";
   else if (depthScore === "yellow" && timingScore === "red") return "yellow";
