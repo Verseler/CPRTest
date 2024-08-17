@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     margin: 10,
     width: 260,
-    borderWidth: 2,
+    borderWidth: 2.5,
     flexDirection: "row",
   },
   bar: {
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     width: 24,
     zIndex: 90,
     position: "absolute",
-    bottom: -5,
+    bottom: -6,
     backgroundColor: "white",
     borderWidth: 3,
   },
