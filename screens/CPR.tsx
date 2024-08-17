@@ -1,7 +1,11 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import useCpr from "../hooks/useCpr";
 import OverallScoreBar from "../components/OverallScoreBar";
-import { type TimingScore, type Score } from "../hooks/useCpr.types";
+import {
+  type TimingScore,
+  type Score,
+  Compression,
+} from "../hooks/useCpr.types";
 import {
   type TimingScoreUIProps,
   type DepthScoreUIProps,
@@ -9,8 +13,14 @@ import {
 } from "./cpr.types";
 
 export default function CPR() {
-  const { timer, timerOn, toggleStartAndStop, currentCompressionScore, depth } =
-    useCpr();
+  const {
+    timer,
+    timerOn,
+    toggleStartAndStop,
+    currentCompressionScore,
+    depth,
+    compressionHistory,
+  } = useCpr();
 
   const { depthAttempt, depthScore, timingScore, overallScore } =
     currentCompressionScore;

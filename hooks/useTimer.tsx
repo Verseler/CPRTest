@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { formatTime } from "./helper";
 
 type Timer = {
+  rawTimer: number;
   timerOn: boolean;
   timer: string;
   msCounter: number;
@@ -24,7 +25,7 @@ export default function useTimer(): Timer {
       timerRef.current = setInterval(() => {
         // Calculate elapsed time
         const elapsed = Date.now() - startTime;
-
+   
         //this update the timer for every 100ms
         setRawTimer(elapsed);
 
@@ -56,6 +57,7 @@ export default function useTimer(): Timer {
   };
 
   return {
+    rawTimer,
     timer,
     timerOn,
     setTimerOn,

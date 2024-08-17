@@ -8,7 +8,11 @@ import {
 } from "./helper";
 import usePreloadedAudio from "./usePreloadedAudio";
 import useTimer from "./useTimer";
-import { type Compression } from "./useCpr.types";
+import { type Compression, type CompressionRecord } from "./useCpr.types";
+
+//for recording cpr attempt purpose
+//to be use in cpr practice (assessment) feature
+const compressionHistory: Array<CompressionRecord> = [];
 
 const DEFAULT_COMPRESSION: Compression = {
   depthAttempt: 0,
@@ -22,8 +26,15 @@ const useCpr = () => {
   const [subscription, setSubscription] = useState<boolean>(false);
   const prevZ = useRef<number>(0);
   const depth = useRef<number>(0);
-  const { msCounter, timer, timerOn, setTimerOn, resetTimer, resetMsCounter } =
-    useTimer();
+  const {
+    msCounter,
+    rawTimer,
+    timer,
+    timerOn,
+    setTimerOn,
+    resetTimer,
+    resetMsCounter,
+  } = useTimer();
 
   const [currentCompressionScore, setCurrentCompressionScore] =
     useState<Compression>(DEFAULT_COMPRESSION);
@@ -65,10 +76,28 @@ const useCpr = () => {
       setCurrentCompressionScore(currentScore);
       prevCompressionScore.current = currentScore;
 
+      //record scores
+      //purpose: scoring for cpr assessment feature
+      recordCompressionHistory(currentScore);
+
       setTimeout(() => {
         setCurrentCompressionScore(DEFAULT_COMPRESSION);
       }, 150);
     }
+  };
+
+  const recordCompressionHistory = (currentScore: Compression): void => {
+    const formattedCurrentTime = (rawTimer * 0.001).toFixed(1);
+    const compressionRecord: CompressionRecord = {
+      score: currentScore,
+      time: formattedCurrentTime,
+    };
+
+    compressionHistory.push(compressionRecord);
+  };
+
+  const clearCompressionHistory = (): void => {
+    compressionHistory.length = 0;
   };
 
   const subscribe = (): void => {
@@ -88,6 +117,7 @@ const useCpr = () => {
     prevCompressionScore.current = DEFAULT_COMPRESSION;
     setCurrentCompressionScore(DEFAULT_COMPRESSION);
     resetTimer();
+    clearCompressionHistory();
   };
 
   const toggleStartAndStop = (): void => {
@@ -101,6 +131,7 @@ const useCpr = () => {
     toggleStartAndStop,
     currentCompressionScore,
     depth: depth.current,
+    compressionHistory,
   };
 };
 
