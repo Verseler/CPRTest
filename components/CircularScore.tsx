@@ -45,7 +45,7 @@ function CircularScore({
           },
         ]}
       >
-        {value === "gray" ? "" : value}
+        {value}
       </Text>
       <Text style={styles.label}>{label}</Text>
     </View>

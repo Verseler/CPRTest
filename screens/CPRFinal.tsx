@@ -4,11 +4,11 @@ import CircularScore from "../components/CircularScore";
 import useCpr from "../hooks/useCpr";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { Score, TimingScore } from "../hooks/useCpr.types";
 
 function CPRFinal() {
   const {
     timer,
-    timerOn,
     toggleStartAndStop,
     currentCompressionScore,
     depth,
@@ -41,10 +41,20 @@ function CPRFinal() {
           <CircularScore size="sm" value={timer} label="TIMER" fontSize={38} />
           <CircularScore
             color={timingScore}
-            value={timingScore}
+            value={
+              timingScore
+                ? timingScoreValue[timingScore]
+                : timingScoreValue.gray
+            }
             label="TIMING"
           />
-          <CircularScore color={depthScore} value={depthScore} label="DEPTH" />
+          <CircularScore
+            color={depthScore}
+            value={
+              depthScore ? depthScoreValue[depthScore] : depthScoreValue.gray
+            }
+            label="DEPTH"
+          />
           <CircularScore
             size="sm"
             value={depthAttempt}
@@ -98,3 +108,16 @@ const styles = StyleSheet.create({
     columnGap: 10,
   },
 });
+
+const depthScoreValue: Record<Score, string> = {
+  green: "Perfect",
+  yellow: "Too  Little",
+  red: "Too Much",
+  gray: "",
+};
+
+const timingScoreValue: Record<TimingScore, string> = {
+  green: "Perfect",
+  red: "Bad",
+  gray: "",
+};
