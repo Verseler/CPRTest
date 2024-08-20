@@ -4,12 +4,11 @@ import OverallScoreBar from "../components/OverallScoreBar";
 import {
   type TimingScore,
   type Score,
-  Compression,
 } from "../hooks/useCpr.types";
 import {
   type TimingScoreUIProps,
   type DepthScoreUIProps,
-  Colors,
+  Color,
 } from "./cpr.types";
 
 export default function CPR() {
@@ -30,7 +29,7 @@ export default function CPR() {
       style={[
         styles.container,
         {
-          borderColor: overallScore === "green" ? Colors.green : "transparent",
+          borderColor: overallScore === "green" ? Color.green : "transparent",
         },
       ]}
     >
@@ -74,12 +73,12 @@ export default function CPR() {
                     {
                       color:
                         depthScore == "green"
-                          ? Colors.green
+                          ? Color.green
                           : depthScore == "red"
-                          ? Colors.red
+                          ? Color.red
                           : depthScore == "yellow"
-                          ? Colors.yellow
-                          : Colors.white,
+                          ? Color.yellow
+                          : Color.white,
                     },
                   ]}
                 >
@@ -99,9 +98,9 @@ export default function CPR() {
 
 const TimingScoreUI = ({ score }: TimingScoreUIProps) => {
   const BG_COLOR: Record<TimingScore, string> = {
-    gray: Colors.gray,
-    green: Colors.green,
-    red: Colors.red,
+    gray: Color.gray,
+    green: Color.green,
+    red: Color.red,
   };
 
   const TIMING_SCORE_MESSAGE = {
@@ -132,10 +131,10 @@ const TimingScoreUI = ({ score }: TimingScoreUIProps) => {
 
 const DepthScoreUI = ({ score }: DepthScoreUIProps) => {
   const BG_COLOR: Record<Score, string> = {
-    gray: Colors.gray,
-    green: Colors.green,
-    red: Colors.red,
-    yellow: Colors.yellow,
+    gray: Color.gray,
+    green: Color.green,
+    red: Color.red,
+    yellow: Color.yellow,
   };
 
   const DEPTH_SCORE_MESSAGE = {

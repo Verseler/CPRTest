@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { View, StyleSheet, Animated, Easing } from "react-native";
 import { type Score } from "../hooks/useCpr.types";
-import { Colors } from "../screens/cpr.types";
+import { Color } from "../screens/cpr.types";
 
 type ScoreBarProps = {
   score: Score | null;
@@ -33,9 +33,9 @@ const OverallScoreBar = ({ score }: ScoreBarProps) => {
     <View style={styles.container}>
       <Animated.View style={[styles.bar, { left: progressPosition }]} />
 
-      <View style={[styles.scoreBox, { backgroundColor: Colors.yellow }]} />
-      <View style={[styles.scoreBox, { backgroundColor: Colors.green }]} />
-      <View style={[styles.scoreBox, { backgroundColor: Colors.red }]} />
+      <View style={[styles.scoreBox, { backgroundColor: Color.yellow }]} />
+      <View style={[styles.scoreBox, { backgroundColor: Color.green }]} />
+      <View style={[styles.scoreBox, { backgroundColor: Color.red }]} />
     </View>
   );
 };

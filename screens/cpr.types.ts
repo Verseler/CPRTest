@@ -1,6 +1,6 @@
 import { type TimingScore, type Score } from "../hooks/useCpr.types";
 
-export enum Colors  {
+export enum Color  {
   black = "#000000",   
   white = "#FFFFFF",  
   gray = "gray",   
