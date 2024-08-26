@@ -2,9 +2,8 @@ import { StyleSheet, View } from "react-native";
 import OverallScoreBar from "../components/OverallScoreBar";
 import CircularScore from "../components/CircularScore";
 import useCpr from "../hooks/useCpr";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Score, TimingScore } from "../hooks/useCpr.types";
+import { CprHeader } from "../components/CprHeader";
 
 function CPRFinal() {
   const {
@@ -20,18 +19,7 @@ function CPRFinal() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={toggleStartAndStop}
-          style={styles.optionButton}
-        >
-          <MaterialCommunityIcons
-            name="dots-vertical"
-            size={24}
-            color="black"
-          />
-        </TouchableOpacity>
-      </View>
+      <CprHeader toggleStartAndStop={toggleStartAndStop} />
 
       <View style={styles.scoreContainer}>
         <View style={styles.scoreBarContainer}>
@@ -73,21 +61,6 @@ export default CPRFinal;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    height: 50,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    justifyContent: "flex-end",
-  },
-  optionButton: {
-    width: 33,
-    height: 33,
-    borderRadius: 33,
-    backgroundColor: "lightgray",
-    alignItems: "center",
-    justifyContent: "center",
   },
   scoreContainer: {
     flex: 1,
