@@ -98,7 +98,7 @@ const colorStyle = {
     borderColor: "#D48806",
   },
   gray: {
-    backgroundColor: "#d3d3d3",
-    borderColor: "#CCCCCC",
+    backgroundColor: "#bab8b8",
+    borderColor: "#a6a6a6",
   },
 };
