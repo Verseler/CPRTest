@@ -20,9 +20,9 @@ const EMPTY_COMPRESSION_VALUE: Compression = {
 
 const useCpr = () => {
   const { playAudioCue } = useAudioCue();
-  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
-  const prevZ = useRef<number>(0);
-  const depth = useRef<number>(0);
+  const [isSubscribed, setIsSubscribed] = useState < boolean > false;
+  const prevZ = useRef < number > 0;
+  const depth = useRef < number > 0;
   const {
     msCounter,
     rawTimer,
@@ -39,8 +39,8 @@ const useCpr = () => {
   } = useCompressionHistory();
 
   const [currentCompressionScore, setCurrentCompressionScore] =
-    useState<Compression>(EMPTY_COMPRESSION_VALUE);
-  const prevCompressionScore = useRef<Compression>(EMPTY_COMPRESSION_VALUE); //it is used for voice cue
+    useState < Compression > EMPTY_COMPRESSION_VALUE;
+  const prevCompressionScore = useRef < Compression > EMPTY_COMPRESSION_VALUE; //it is used for voice cue
   const formattedTime = (rawTimer * 0.001).toFixed(1);
 
   // play Audio Cue and getting compression score when conditions are met

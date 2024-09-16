@@ -3,11 +3,16 @@ import { useState, memo } from "react";
 import { Divider, Menu, TouchableRipple } from "react-native-paper";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
-function Header({ toggleStartAndStop }) {
+type CprHeaderProps = {
+  startCpr: () => void;
+  stopCpr: () => void;
+};
+
+function Header({ startCpr, stopCpr }: CprHeaderProps) {
   const [visibleActionMenu, setVisibleActionMenu] = useState(false);
 
-  const openActionMenu = () => setVisibleActionMenu(true);
-  const closeActionMenu = () => setVisibleActionMenu(false);
+  const openActionMenu = (): void => setVisibleActionMenu(true);
+  const closeActionMenu = (): void => setVisibleActionMenu(false);
 
   return (
     <View style={styles.header}>
@@ -16,15 +21,19 @@ function Header({ toggleStartAndStop }) {
         onDismiss={closeActionMenu}
         anchor={<MoreOptionActionButton onPress={openActionMenu} />}
       >
-        <Menu.Item onPress={toggleStartAndStop} title="ToggleStart" />
+        <Menu.Item onPress={startCpr} title="Start" />
         <Divider />
-        <Menu.Item onPress={() => {}} title="End" />
+        <Menu.Item onPress={stopCpr} title="Stop" />
       </Menu>
     </View>
   );
 }
 
-function MoreOptionActionButton({ onPress }) {
+type MoreOptionActionButtonProps = {
+  onPress: () => void;
+};
+
+function MoreOptionActionButton({ onPress }: MoreOptionActionButtonProps) {
   return (
     <TouchableRipple onPress={onPress} style={styles.optionButton}>
       <MaterialCommunityIcons name="dots-vertical" size={24} color="black" />

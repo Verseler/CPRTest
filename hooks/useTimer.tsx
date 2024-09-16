@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatTime } from "./helper";
+import { formatTime } from "./useCpr.helper";
 
 type Timer = {
   rawTimer: number;
@@ -13,26 +13,29 @@ type Timer = {
 
 export default function useTimer(): Timer {
   const [timerOn, setTimerOn] = useState<boolean>(false);
-  const timerRef = useRef<number>(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [rawTimer, setRawTimer] = useState<number>(0); //raw time value that increments every 100ms
   const timer: string = useMemo(() => formatTime(rawTimer), [rawTimer]); //formatted time value with readable format
   const msCounter = useRef<number>(100); //timer for every 0.6 second. It is use as counter to determine when to play the audio cue and get compression attempt score
+  const lastUpdateTime = useRef<number>(0);
 
   useEffect(() => {
     if (timerOn) {
       const startTime = Date.now();
 
       timerRef.current = setInterval(() => {
-        // Calculate elapsed time
-        const elapsed = Date.now() - startTime;
-   
+        const currentTime = Date.now();
+        const elapsed = currentTime - startTime;
+
         //this update the timer for every 100ms
         setRawTimer(elapsed);
 
         //msCounter or milisecondsCounter is used to count the time between 0.1 to 6 second
         //its purpose is to determine the time the compression attempt should be performed
         //because the compression attempt is needed to be performed every 0.6 second based on 120 compression per minute
-        msCounter.current += 100;
+        const delta = currentTime - lastUpdateTime.current;
+        msCounter.current += delta; // add the actual elapsed time since the last update
+        lastUpdateTime.current = currentTime; // update the last update time
       }, 100);
     }
     //clean up
@@ -54,6 +57,7 @@ export default function useTimer(): Timer {
 
   const resetMsCounter = (): void => {
     msCounter.current = 100;
+    lastUpdateTime.current = Date.now();
   };
 
   return {

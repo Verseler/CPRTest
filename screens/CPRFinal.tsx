@@ -6,20 +6,14 @@ import { Score, TimingScore } from "../hooks/useCpr.types";
 import { CprHeader } from "../components/CprHeader";
 
 function CPRFinal() {
-  const {
-    timer,
-    toggleStartAndStop,
-    currentCompressionScore,
-    depth,
-    compressionHistory,
-  } = useCpr();
+  const { timer, currentCompressionScore, startCpr, stopCpr } = useCpr();
 
   const { depthAttempt, depthScore, timingScore, overallScore } =
     currentCompressionScore;
 
   return (
     <View style={styles.container}>
-      <CprHeader toggleStartAndStop={toggleStartAndStop} />
+      <CprHeader startCpr={startCpr} stopCpr={stopCpr} />
 
       <View style={styles.scoreContainer}>
         <View style={styles.scoreBarContainer}>
@@ -29,11 +23,7 @@ function CPRFinal() {
           <CircularScore size="sm" value={timer} label="TIMER" fontSize={38} />
           <CircularScore
             color={timingScore}
-            value={
-              timingScore
-                ? timingScoreValue[timingScore]
-                : timingScoreValue.gray
-            }
+            value={timingScore ? timingScoreValue[timingScore] : null}
             label="TIMING"
           />
           <CircularScore
@@ -47,7 +37,7 @@ function CPRFinal() {
             size="sm"
             value={depthAttempt}
             valueColor={depthScore}
-            label="DEPTH (in)"
+            label="DEPTH(in)"
             fontSize={44}
           />
         </View>
@@ -92,5 +82,4 @@ const depthScoreValue: Record<Score, string> = {
 const timingScoreValue: Record<TimingScore, string> = {
   green: "Perfect",
   red: "Bad",
-  gray: "",
 };
