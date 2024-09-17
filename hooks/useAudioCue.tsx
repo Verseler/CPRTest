@@ -6,13 +6,13 @@ import { type TSoundRef, type SoundFile } from "./useCpr.types";
 import { MutableRefObject } from "react";
 import { Compression, SoundCue } from "./useCpr.types";
 
-const PushAudio = require("../../assets/audio/push.mp3") as AVPlaybackSource;
+const PushAudio = require("../assets/audio/push.mp3") as AVPlaybackSource;
 const PushFasterAudio =
-  require("../../assets/audio/pushFaster.mp3") as AVPlaybackSource;
+  require("../assets/audio/pushFaster.mp3") as AVPlaybackSource;
 const PushHarderAudio =
-  require("../../assets/audio/pushHarder.mp3") as AVPlaybackSource;
+  require("../assets/audio/pushHarder.mp3") as AVPlaybackSource;
 const PushSoftlyAudio =
-  require("../../assets/audio/pushSoftly.mp3") as AVPlaybackSource;
+  require("../assets/audio/pushSoftly.mp3") as AVPlaybackSource;
 
 const useAudioCue = () => {
   const soundsRef = useRef<TSoundRef>({
@@ -72,7 +72,7 @@ const useAudioCue = () => {
         depthScore === "gray")
     ) {
       soundCue = "pushFaster";
-    } else if (timingScore === "gray" && depthScore === "gray") {
+    } else if (depthScore === "gray") {
       soundCue = "push";
     } else {
       soundCue = "push";
