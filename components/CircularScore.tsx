@@ -25,12 +25,10 @@ function CircularScore({
         {
           height: sizeStyle[size],
           width: sizeStyle[size],
+          borderColor: color ? colorStyle[color].borderColor : "darkgray",
           backgroundColor: color
             ? colorStyle[color].backgroundColor
-            : colorStyle.gray.backgroundColor,
-          borderColor: color
-            ? colorStyle[color].borderColor
-            : colorStyle.gray.borderColor,
+            : "darkgray",
         },
       ]}
     >
