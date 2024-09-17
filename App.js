@@ -14,7 +14,7 @@ export default function App() {
       <PaperProvider>
         <NavigationContainer>
           <Stack.Navigator>
-            {/* <Stack.Screen
+            <Stack.Screen
               name="CPRFinal"
               component={CPRFinal}
               options={{
@@ -24,8 +24,8 @@ export default function App() {
                 statusBarHidden: true,
                 statusBarStyle: "light",
               }}
-            /> */}
-            <Stack.Screen
+            />
+            {/* <Stack.Screen
               name="CPR"
               component={CPR}
               options={{
@@ -35,7 +35,7 @@ export default function App() {
                 statusBarHidden: true,
                 statusBarStyle: "light",
               }}
-            />
+            /> */}
           </Stack.Navigator>
         </NavigationContainer>
       </PaperProvider>
