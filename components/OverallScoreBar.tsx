@@ -21,7 +21,6 @@ const OverallScoreBar = ({ score }: ScoreBarProps) => {
       toValue: SCORE_PROGRESS_VALUE[score || "gray"],
       duration: 15,
       useNativeDriver: false,
-      easing: Easing.ease,
     }).start();
   }, [score]);
 
@@ -29,6 +28,7 @@ const OverallScoreBar = ({ score }: ScoreBarProps) => {
     inputRange: [0, 100],
     outputRange: ["0%", "100%"],
   });
+
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.bar, { left: progressPosition }]} />

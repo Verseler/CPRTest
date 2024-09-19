@@ -34,8 +34,12 @@ export default function useTimer(): Timer {
         //its purpose is to determine the time the compression attempt should be performed
         //because the compression attempt is needed to be performed every 0.6 second based on 120 compression per minute
         const delta = currentTime - lastUpdateTime.current;
-        msCounter.current += delta; // add the actual elapsed time since the last update
-        lastUpdateTime.current = currentTime; // update the last update time
+        lastUpdateTime.current = currentTime;
+
+        msCounter.current += delta;
+        if (msCounter.current >= 600) {
+          resetMsCounter();
+        }
       }, 100);
     }
     //clean up

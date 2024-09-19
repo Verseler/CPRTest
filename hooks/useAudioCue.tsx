@@ -54,25 +54,21 @@ const useAudioCue = () => {
     };
   }, []);
 
-  const playAudioCue = async (
-    prevScores: MutableRefObject<Compression>
-  ): Promise<void> => {
-    const { depthScore, timingScore } = prevScores.current;
+  const playAudioCue = async (compressionScore: Compression): Promise<void> => {
+    const { depthScore, timingScore } = compressionScore;
     let soundCue: SoundCue = "push";
 
-    if (timingScore === "green" && depthScore === "yellow") {
+    if (depthScore === "Perfect" && timingScore === "Perfect") {
+      soundCue = "push";
+    } else if (depthScore === "Too Shallow") {
       soundCue = "pushHarder";
-    } else if (timingScore === "green" && depthScore === "red") {
+    } else if (depthScore === "Too Deep") {
       soundCue = "pushSoftly";
-    } else if (
-      timingScore === "red" &&
-      (depthScore === "green" ||
-        depthScore === "yellow" ||
-        depthScore === "red" ||
-        depthScore === "gray")
-    ) {
+    } else if (timingScore === "Too Late") {
+      soundCue = "pushSoftly";
+    } else if (timingScore === "Too Early") {
       soundCue = "pushFaster";
-    } else if (depthScore === "gray") {
+    } else if (timingScore === "Missed") {
       soundCue = "push";
     } else {
       soundCue = "push";

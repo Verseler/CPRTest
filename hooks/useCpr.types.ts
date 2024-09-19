@@ -1,4 +1,5 @@
 import { Audio, AVPlaybackSource } from "expo-av";
+import { DepthScore, TimingScore } from "./new/useCpr.types";
 
 export type SoundCue = "push" | "pushFaster" | "pushHarder" | "pushSoftly";
 
@@ -11,12 +12,12 @@ export type SoundFile = {
 
 export type Score = "yellow" | "green" | "red" | "gray"
 
-export type TimingScore = Exclude<Score, "yellow" | "gray">
+// export type TimingScore = Exclude<Score, "yellow" | "gray">
 
 export type Compression = {
-  depthAttempt: number | null;
-  depthScore: Score | null;
-  timingScore: TimingScore | null;
+  compressionDepth: number | null;
+  depthScore: DepthScore | null;
+  timingScore:  TimingScore | null;
   overallScore: Score | null;
 };
 export type CompressionRecord = {

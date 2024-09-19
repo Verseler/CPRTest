@@ -5,7 +5,8 @@ type CircularScoreProps = {
   size?: "lg" | "sm";
   color?: Score | null;
   value: string | number | Score | null;
-  valueColor?: Score | null;
+  valueColor?: string | null;
+  defaultValueColor?: string;
   label: string;
   fontSize?: number;
 };
@@ -15,8 +16,9 @@ function CircularScore({
   color = "gray",
   value,
   valueColor,
+  defaultValueColor = "white",
   label,
-  fontSize = 32,
+  fontSize = 35,
 }: CircularScoreProps) {
   return (
     <View
@@ -36,9 +38,7 @@ function CircularScore({
         style={[
           styles.value,
           {
-            color: valueColor
-              ? colorStyle[valueColor].backgroundColor
-              : "white",
+            color: valueColor ?? defaultValueColor,
             fontSize: fontSize,
           },
         ]}
