@@ -1,18 +1,20 @@
 import { useEffect, useRef } from "react";
 import { ToastAndroid } from "react-native";
 import { Audio, AVPlaybackSource } from "expo-av";
-import { type TSoundRef, type SoundFile } from "./useCpr.types";
+import {
+  type TSoundRef,
+  type SoundFile,
+  type AudioCue,
+  type Compression,
+} from "./useCpr.types";
 
-import { MutableRefObject } from "react";
-import { Compression, SoundCue } from "./useCpr.types";
-
-const PushAudio = require("../assets/audio/push.mp3") as AVPlaybackSource;
+const PushAudio = require("../../assets/audio/push.mp3") as AVPlaybackSource;
 const PushFasterAudio =
-  require("../assets/audio/pushFaster.mp3") as AVPlaybackSource;
+  require("../../assets/audio/pushFaster.mp3") as AVPlaybackSource;
 const PushHarderAudio =
-  require("../assets/audio/pushHarder.mp3") as AVPlaybackSource;
+  require("../../assets/audio/pushHarder.mp3") as AVPlaybackSource;
 const PushSoftlyAudio =
-  require("../assets/audio/pushSoftly.mp3") as AVPlaybackSource;
+  require("../../assets/audio/pushSoftly.mp3") as AVPlaybackSource;
 
 const useAudioCue = () => {
   const soundsRef = useRef<TSoundRef>({
@@ -56,30 +58,30 @@ const useAudioCue = () => {
 
   const playAudioCue = async (compressionScore: Compression): Promise<void> => {
     const { depthScore, timingScore } = compressionScore;
-    let soundCue: SoundCue = "push";
+    let audioClip: AudioCue = "push";
 
     if (depthScore === "Perfect" && timingScore === "Perfect") {
-      soundCue = "push";
+      audioClip = "push";
     } else if (depthScore === "Too Shallow") {
-      soundCue = "pushHarder";
+      audioClip = "pushHarder";
     } else if (depthScore === "Too Deep") {
-      soundCue = "pushSoftly";
-    } else if (timingScore === "Too Late") {
-      soundCue = "pushSoftly";
+      audioClip = "pushSoftly";
     } else if (timingScore === "Too Early") {
-      soundCue = "pushFaster";
+      audioClip = "pushFaster";
+    } else if (timingScore === "Too Late") {
+      audioClip = "pushFaster";
     } else if (timingScore === "Missed") {
-      soundCue = "push";
+      audioClip = "push";
     } else {
-      soundCue = "push";
+      audioClip = "push";
     }
 
     try {
-      const sound = soundsRef.current[soundCue];
+      const sound = soundsRef.current[audioClip];
       if (sound) {
         await sound.replayAsync();
       } else {
-        ToastAndroid.show(`Sound not found: ${soundCue}`, ToastAndroid.SHORT);
+        ToastAndroid.show(`Sound not found: ${audioClip}`, ToastAndroid.SHORT);
       }
     } catch (err: unknown) {
       const error = err as Error;

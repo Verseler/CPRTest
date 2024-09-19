@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { type CompressionRecord, type Compression } from "./useCpr.types";
+import { type CompressionRecord, type Compression } from "./new/useCpr.types";
 
 function useCompressionHistory() {
   const compressionHistory = useRef<Array<CompressionRecord>>([]);

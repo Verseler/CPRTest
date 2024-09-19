@@ -3,17 +3,9 @@ import useCpr from "../hooks/new/useCpr";
 import { CprHeader } from "../components/CprHeader";
 import CircularScore from "../components/CircularScore";
 import OverallScoreBar from "../components/OverallScoreBar";
-import CircularProgress from "../components/CircularProgress";
 
 const CPRGuide = () => {
-  const {
-    compressionCount,
-    currentCompressionScore,
-    timer,
-    start,
-    stop,
-    msCounter,
-  } = useCpr();
+  const { currentCompressionScore, timer, start, stop, msCounter } = useCpr();
 
   const compressionRateTimer = (msCounter * 0.01).toFixed(0);
   const { compressionDepth, depthScore, overallScore, timingScore } =
@@ -33,7 +25,7 @@ const CPRGuide = () => {
     "Too Deep": "red",
     default: "darkgray",
   };
-
+  
   return (
     <View style={styles.container}>
       <CprHeader startCpr={start} stopCpr={stop} />

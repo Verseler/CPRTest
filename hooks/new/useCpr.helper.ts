@@ -1,50 +1,45 @@
-import { DepthScore, TimingScore } from "./useCpr.types";
+import { DepthScore, OverallScore, TimingScore } from "./useCpr.types";
 
 const ACCELERATION_THRESHOLD = 0.3;
 
-export const isCompressionStarted = (prevZ: number, currentZ: number) => {
+export const isCompressionStarted = (prevZ: number, currentZ: number): boolean => {
   return prevZ - currentZ > ACCELERATION_THRESHOLD;
 };
 
-export const isCompressionEnded = (prevZ: number, currentZ: number, isCompressing: boolean) => {
+export const isCompressionEnded = (prevZ: number, currentZ: number, isCompressing: boolean): boolean => {
   return currentZ - prevZ > ACCELERATION_THRESHOLD && isCompressing;
 };
 
-export const isCompressionMissed = (previousTime: number, currentTime: number, isCompressing: boolean) => {
-  const timeInSeconds = getTimeGap(previousTime, currentTime);
-  const timeDecimal = Number((timeInSeconds % 1).toFixed(1));
 
-  //if time exceed with compression rate of 0.6 and isCompressing state is false, it means the compression is missed
-  return   timeDecimal === 0.6 && !isCompressing;
-}
+export const getTimeGap = (previousTime: number, currentTime: number): number => {  
+  const timeGap: number = currentTime - previousTime;
+  const timeGapInSeconds: number = timeGap / 1000;   
 
-export const getTimeGap = (previousTime: number, currentTime: number) => {  
-  const timeGap = currentTime - previousTime;
-  const timeGapInSeconds = timeGap / 1000;   
   return timeGapInSeconds;
 };
 
-export const getLowestZ = (lowestZ: number, currentZ: number) => {  
-  const lowestZValue = Math.min(lowestZ, currentZ);
+export const getLowestZ = (lowestZ: number, currentZ: number): number => {  
+  const lowestZValue: number = Math.min(lowestZ, currentZ);
   return lowestZValue;
 };
 
 
-export const getTimingScore = (timeGap: number) => {
-    //compression rate is 0.6 milliseconds
-    //if compression is performed between 0.5 and 0.7 milliseconds it is a perfect timing
-    if (timeGap >= 0.5 && timeGap <= 0.7) {
+export const getTimingScore = (timeGap: number): TimingScore => {
+    if (timeGap >= 0.3 && timeGap <= 0.7) {
       return "Perfect"
-    } else if (timeGap < 0.5) {
+    } else if (timeGap < 0.3) {
       return "Too Early"
-    } else  if(timeGap > 0.7) {
+    } 
+    else if(timeGap > 0.7) {
       return "Too Late"
     }
-
-    return null;
+    console.log(3)
+    return "Missed";
 }
 
-export const getDepthScore = (depth: number) => {
+export const getDepthScore = (depth: number | null): DepthScore | null => {
+  if(null === depth) return null;
+ 
   if (depth >= 2 && depth <= 2.5) {
     return "Perfect"
   } else if (depth < 2) {
@@ -56,7 +51,7 @@ export const getDepthScore = (depth: number) => {
   return null;
 }
 
-export const getOverallScore = (timingScore: TimingScore | null, depthScore: DepthScore | null) => {
+export const getOverallScore = (timingScore: TimingScore | null, depthScore: DepthScore | null): OverallScore => {
   if (timingScore === "Perfect" && depthScore === "Perfect") {
     return "green"
   } 
@@ -76,13 +71,13 @@ export const getOverallScore = (timingScore: TimingScore | null, depthScore: Dep
     return "red"
   }
   else if(timingScore === "Too Late" && depthScore === "Perfect") {
-    return "red"
-  }
-  else if (timingScore === "Too Late" && depthScore === "Too Deep") {
-    return "red"
-  }
-  else if (timingScore === "Too Late" && depthScore === "Too Shallow") {
     return "yellow"
+  }
+  else if(timingScore === "Too Late" && depthScore === "Too Shallow") {
+    return "yellow"
+  }
+  else if(timingScore === "Too Late" && depthScore === "Too Deep") {
+    return "red"
   }
   else if(timingScore === "Missed") {
     return "red"
@@ -90,3 +85,13 @@ export const getOverallScore = (timingScore: TimingScore | null, depthScore: Dep
 
   return "gray";
 }
+
+export const formatTime = (time: number): string => {
+  const totalSeconds: number = Math.floor(time / 1000);
+  const minutes: number = Math.floor(totalSeconds / 60);
+  const seconds: number = totalSeconds % 60;
+
+  return `${minutes < 10 ? "0" : ""}${minutes}:${
+    seconds < 10 ? "0" : ""
+  }${seconds}`;
+};
