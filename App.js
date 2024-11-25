@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 
-import CPR from "./screens/CPGuide";
+import CPR from "./screens/cpr1/CPRGuide";
 
 const Stack = createNativeStackNavigator();
 
