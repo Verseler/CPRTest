@@ -6,13 +6,14 @@ import { useNavigation } from "@react-navigation/native";
 export default function CPR() {
   const { isLoading, playAudio, pauseAudio } = useTimingAudio();
   const {
-    accelerometerData,
     compressionCount,
     timingScore,
+    compressionDepth,
+    depthScore,
     isMonitoring,
     startMonitoring,
     stopMonitoring,
-  } = useCpr(); // Use the custom hook
+  } = useCpr();
   const navigation = useNavigation();
 
   const handleStartMonitoring = () => {
@@ -26,7 +27,7 @@ export default function CPR() {
   };
 
   const handleExit = () => {
-    pauseAudio();
+    handleStopMonitoring();
     navigation.goBack();
   };
 
@@ -48,16 +49,19 @@ export default function CPR() {
         <Button title="Back" onPress={handleExit} />
       </View>
       <Text style={styles.sensorData}>
-        Accelerometer Data: X: {accelerometerData.x.toFixed(2)}, Y:{" "}
-        {accelerometerData.y.toFixed(2)}, Z: {accelerometerData.z.toFixed(2)}
+        Compression Count: {compressionCount}
       </Text>
 
       <Text style={styles.sensorData}>
-        Compression Count: {compressionCount}
+        Compression Depth: {compressionDepth} inches
       </Text>
+
       <View style={styles.content}>
         <View style={styles.scoreCircleContainer}>
           <Text style={styles.score}>{timingScore}</Text>
+        </View>
+        <View style={styles.scoreCircleContainer}>
+          <Text style={styles.score}>{depthScore}</Text>
         </View>
       </View>
     </View>
@@ -77,8 +81,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    columnGap: 20,
   },
   scoreCircleContainer: {
     alignItems: "center",
@@ -91,7 +97,8 @@ const styles = StyleSheet.create({
     height: 220,
   },
   score: {
-    fontSize: 48,
+    fontSize: 40,
+    textAlign: "center",
     fontWeight: "bold",
     color: "gray",
   },
