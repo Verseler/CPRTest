@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Accelerometer } from "expo-sensors";
 import {
   calculateDepth,
@@ -55,30 +55,32 @@ const useCpr = () => {
     }
   }, [isMonitoring]);
 
-  const handleAccelerometerData = (data) => {
+  const handleAccelerometerData = useCallback((data) => {
     const magnitude = calculateMagnitude(data);
 
-    if (isCompression(magnitude, lastCompressionTime.current)) {
+    if (isCompression(data.z, lastCompressionTime.current)) {
+      // Calculate depth based on the z-axis acceleration
+      const depth = calculateDepth(data.z);
+   
+      setCompressionDepth(depth);
+      setDepthScore(getDepthScore(depth));
+      resetDepthScore();
+
+      // Evaluate timing
       const now = Date.now();
       const compressionInterval = now - lastCompressionTime.current;
 
       evaluateTiming(compressionInterval);
       setCompressionCount((prev) => prev + 1);
 
-      // Calculate depth based on the z-axis acceleration
-      const depth = calculateDepth(data.z);
-      setCompressionDepth(depth);
-      setDepthScore(getDepthScore(depth));
-      console.log(depth);
-      resetDepthScore();
       lastCompressionTime.current = now;
       compressionTimer.current = 0;
     }
 
     setAccelerometerData(data);
-  };
+  }, []);
 
-  const evaluateTiming = (interval) => {
+  const evaluateTiming = useCallback((interval) => {
     if (Math.abs(interval - TARGET_INTERVAL_MS) <= TOLERANCE_MS) {
       setTimingScore("Perfect");
     } else if (interval < TARGET_INTERVAL_MS - TOLERANCE_MS) {
@@ -88,7 +90,7 @@ const useCpr = () => {
     }
 
     resetTimingScore();
-  };
+  }, []);
 
   const resetTimingScore = () => {
     setTimeout(() => {

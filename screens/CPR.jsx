@@ -48,12 +48,13 @@ export default function CPR() {
       <View style={styles.header}>
         <Button title="Back" onPress={handleExit} />
       </View>
-      <Text style={styles.sensorData}>
+      {/* <Text style={styles.sensorData}>
         Compression Count: {compressionCount}
-      </Text>
+      </Text> */}
 
-      <Text style={styles.sensorData}>
-        Compression Depth: {compressionDepth} inches
+      <Text style={styles.sensorData}>Compression Depth:</Text>
+      <Text style={[styles.sensorData, { fontWeight: "bold", fontSize: 16 }]}>
+        {compressionDepth} inches
       </Text>
 
       <View style={styles.content}>
@@ -77,7 +78,10 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+  },
+  sensorData: {
+    fontSize: 14,
+
   },
   content: {
     flex: 1,
