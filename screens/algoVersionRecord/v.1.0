@@ -1,0 +1,138 @@
+import { StyleSheet, Text, View, Button } from "react-native";
+import useTimingAudio from "./hooks/useTimingAudio";
+import { useEffect, useState, useRef } from "react";
+import { Accelerometer } from "expo-sensors";
+
+export default function CPR() {
+  const { isPlaying, isLoading, playAudio, pauseAudio } = useTimingAudio();
+
+  // States for accelerometer data and monitoring
+  const [accelerometerData, setAccelerometerData] = useState({
+    x: 0,
+    y: 0,
+    z: 0,
+  });
+  const [compressionCount, setCompressionCount] = useState(0);
+  const [timingScore, setTimingScore] = useState("");
+  const [isMonitoring, setIsMonitoring] = useState(false);
+
+  // Refs to store values that do not trigger re-renders
+  const lastCompressionTime = useRef(null); // Last compression timestamp
+  const subscription = useRef(null); // Subscription for accelerometer listener
+
+  // Constants for CPR timing and compression depth
+  const COMPRESSION_THRESHOLD = 1.15;
+  const TARGET_INTERVAL_MS = 500; // 12 CPM -> 500ms per compression
+  const TOLERANCE_MS = 100; // Acceptable deviation for interval timing
+
+  useEffect(() => {
+    if (isMonitoring) {
+      Accelerometer.setUpdateInterval(16.67); // Set accelerometer update interval to 100ms
+      subscription.current = Accelerometer.addListener(handleAccelerometerData);
+    } else {
+      // Clean up the subscription when monitoring is stopped
+      subscription.current?.remove();
+    }
+
+    // Cleanup subscription on unmount
+    return () => subscription.current?.remove();
+  }, [isMonitoring]);
+
+  const handleAccelerometerData = (data) => {
+    const magnitude = calculateMagnitude(data);
+
+    if (isCompression(magnitude)) {
+      const now = Date.now();
+
+      evaluateTiming(now - lastCompressionTime.current); // Evaluate timing based on compression interval
+      setCompressionCount((prev) => prev + 1);
+      lastCompressionTime.current = now; // Update last compression time
+    }
+
+    setAccelerometerData(data); // Update accelerometer data
+  };
+
+  const isCompression = (magnitude) => {
+    const now = Date.now();
+    return (
+      magnitude > COMPRESSION_THRESHOLD &&
+      (!lastCompressionTime.current || now - lastCompressionTime.current > 200) // Prevent double-counting
+    );
+  };
+
+  const calculateMagnitude = ({ x, y, z }) => {
+    return Math.sqrt(x * x + y * y + z * z).toFixed(2); // Calculate vector magnitude
+  };
+
+  const evaluateTiming = (interval) => {
+    if (Math.abs(interval - TARGET_INTERVAL_MS) <= TOLERANCE_MS) {
+      setTimingScore("Perfect");
+    } else if (interval < TARGET_INTERVAL_MS - TOLERANCE_MS) {
+      setTimingScore("Too Fast");
+    } else {
+      setTimingScore("Missed");
+    }
+
+    resetTimingScore();
+  };
+
+  const resetTimingScore = () => {
+    setTimeout(() => setTimingScore(""), 150);
+  };
+
+  const startMonitoring = () => {
+    playAudio();
+    setCompressionCount(0);
+    setTimingScore("");
+    lastCompressionTime.current = null; // Reset last compression time
+    setIsMonitoring(true);
+  };
+
+  const stopMonitoring = () => {
+    pauseAudio();
+    setIsMonitoring(false);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>CPR Timing and Depth Detection</Text>
+      <Button
+        title={isMonitoring ? "Stop Monitoring" : "Start Monitoring"}
+        onPress={isMonitoring ? stopMonitoring : startMonitoring}
+        disabled={isLoading}
+      />
+      <Text style={styles.sensorData}>
+        Accelerometer Data: X: {accelerometerData.x.toFixed(2)}, Y:{" "}
+        {accelerometerData.y.toFixed(2)}, Z: {accelerometerData.z.toFixed(2)}
+      </Text>
+      <Text style={styles.sensorData}>
+        Magnitude: {calculateMagnitude(accelerometerData)}
+      </Text>
+      <Text style={styles.sensorData}>
+        Compression Count: {compressionCount}
+      </Text>
+      <Text style={styles.sensorData}>Timing Score: {timingScore}</Text>
+      <Text style={styles.sensorData}>
+        Monitoring: {isMonitoring ? "Active" : "Stopped"}
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  sensorData: {
+    fontSize: 16,
+    marginVertical: 10,
+  },
+});

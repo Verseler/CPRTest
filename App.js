@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 
 import CPR from "./screens/CPR";
+import StartingScreen from "./screens/StartingScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -13,11 +14,12 @@ export default function App() {
       <PaperProvider>
         <NavigationContainer>
           <Stack.Navigator>
+            <Stack.Screen name="StartingScreen" component={StartingScreen} />
             <Stack.Screen
               name="CPR"
               component={CPR}
               options={{
-                orientation: "landscape",
+                orientation: "landscape_right",
                 headerShown: false,
                 statusBarTranslucent: true,
                 statusBarHidden: true,
