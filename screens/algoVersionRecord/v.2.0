@@ -1,0 +1,119 @@
+/* Working (timing and compression is performed only) */
+
+import { useState, useRef, useEffect } from "react";
+import { Accelerometer } from "expo-sensors";
+
+const useCpr = () => {
+  const [accelerometerData, setAccelerometerData] = useState({
+    x: 0,
+    y: 0,
+    z: 0,
+  });
+  const [compressionCount, setCompressionCount] = useState(0);
+  const [timingScore, setTimingScore] = useState("");
+  const [isMonitoring, setIsMonitoring] = useState(false);
+
+  const lastCompressionTime = useRef(null);
+  const compressionTimer = useRef(0); // Milliseconds counter for compression interval
+  const subscription = useRef(null);
+
+  const COMPRESSION_THRESHOLD = 1.15;
+  const TARGET_INTERVAL_MS = 500; // 12 CPM -> 500ms per compression
+  const TOLERANCE_MS = 100; // Acceptable deviation for interval timing
+
+  useEffect(() => {
+    if (isMonitoring) {
+      Accelerometer.setUpdateInterval(16.67); // Set accelerometer update interval to 60Hz (16.67ms)
+      subscription.current = Accelerometer.addListener(handleAccelerometerData);
+
+      // Start the timer once monitoring starts
+      const timerInterval = setInterval(() => {
+        if (compressionTimer.current >= TARGET_INTERVAL_MS) {
+          // If timer exceeds 500ms, set timingScore to "Missed" and reset timer
+          setTimingScore("Missed");
+          resetTimingScore();
+          compressionTimer.current = 0; // Reset the timer
+        } else {
+          compressionTimer.current += 16.67; // Increment timer by the update interval
+        }
+      }, 16.67); // Timer updates every 16.67ms (same as accelerometer update interval)
+
+      // Cleanup timer when monitoring stops
+      return () => {
+        clearInterval(timerInterval);
+        subscription.current?.remove();
+      };
+    } else {
+      // Clean up the subscription when monitoring is stopped
+      subscription.current?.remove();
+    }
+  }, [isMonitoring]);
+
+  const handleAccelerometerData = (data) => {
+    const magnitude = calculateMagnitude(data);
+
+    if (isCompression(magnitude)) {
+      const now = Date.now();
+
+      evaluateTiming(now - lastCompressionTime.current); // Evaluate timing based on compression interval
+      setCompressionCount((prev) => prev + 1);
+      lastCompressionTime.current = now; // Update last compression time
+      compressionTimer.current = 0; // Reset timer on new compression
+    }
+
+    setAccelerometerData(data); // Update accelerometer data
+  };
+
+  const isCompression = (magnitude) => {
+    const now = Date.now();
+    return (
+      magnitude > COMPRESSION_THRESHOLD &&
+      (!lastCompressionTime.current || now - lastCompressionTime.current > 300) // Prevent double-counting
+    );
+  };
+
+  const calculateMagnitude = ({ x, y, z }) => {
+    return Math.sqrt(x * x + y * y + z * z).toFixed(2); // Calculate vector magnitude
+  };
+
+  const evaluateTiming = (interval) => {
+    if (Math.abs(interval - TARGET_INTERVAL_MS) <= TOLERANCE_MS) {
+      setTimingScore("Perfect");
+    } else if (interval < TARGET_INTERVAL_MS - TOLERANCE_MS) {
+      setTimingScore("Too Fast");
+    } else {
+      setTimingScore("Missed");
+    }
+
+    resetTimingScore();
+  };
+
+  const resetTimingScore = () => {
+    setTimeout(() => {
+      setTimingScore("");
+    }, 150);
+  };
+
+  const startMonitoring = () => {
+    setCompressionCount(0);
+    setTimingScore("");
+    lastCompressionTime.current = null; // Reset last compression time
+    compressionTimer.current = 0; // Reset compression timer
+    setIsMonitoring(true);
+  };
+
+  const stopMonitoring = () => {
+    setIsMonitoring(false);
+  };
+
+  return {
+    accelerometerData,
+    compressionCount,
+    timingScore,
+    isMonitoring,
+    startMonitoring,
+    stopMonitoring,
+  };
+};
+
+export default useCpr;
