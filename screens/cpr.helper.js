@@ -1,16 +1,29 @@
+import { Feedback, Score } from "./enum";
+
 const COMPRESSION_THRESHOLD = 1.15;
+const TARGET_INTERVAL_MS = 500;
+const TOLERANCE_MS = 100;
 const GRAVITY = 9.81; // Gravity constant in m/s^2
 const TIME_INTERVAL = 0.01667; // 60Hz = 16.67ms
 const INCHES_PER_METER = 39.3701;
-const CALIBRATION_FACTOR = 28.5; // Adjust based on real-world testing
+const CALIBRATION_FACTOR = 27.5; //* Adjust based on real-world testing
 
 export function calculateDepth(z) {
   const verticalAcceleration = Math.abs(z - GRAVITY);
+  const sensitivity = z > 1 ? z : 1; //try wala walaa ang sensitivity
+  console.log(
+    "z:",
+    z,
+    " v: ",
+    verticalAcceleration,
+    " s: ",
+    sensitivity,
+    " zv: ",
+    z * verticalAcceleration
+  );
 
-  // Convert acceleration to displacement (depth)
-  // depth = (1/2) * acceleration * (time^2), where time is approximated per sensor update
-  const depth = 0.5 * (verticalAcceleration * z) * Math.pow(TIME_INTERVAL, 2);
-  console.log("d: ", depth * INCHES_PER_METER * CALIBRATION_FACTOR);
+  const depth =
+    0.5 * (verticalAcceleration * Math.abs(z)) * Math.pow(TIME_INTERVAL, 2);
   return (depth * INCHES_PER_METER * CALIBRATION_FACTOR).toFixed(2);
 }
 
@@ -19,7 +32,7 @@ export function isCompression(magnitude, lastCompressionTime) {
 
   return (
     magnitude > COMPRESSION_THRESHOLD &&
-    (!lastCompressionTime || now - lastCompressionTime > 300) // Prevent double-counting
+    (!lastCompressionTime || now - lastCompressionTime > 300) // Prevent double-counting of compression
   );
 }
 
@@ -29,10 +42,88 @@ export function calculateMagnitude({ x, y, z }) {
 
 export function getDepthScore(depth) {
   if (depth > 2.5) {
-    return "Too Deep";
+    return Score.TooDeep;
   } else if (depth < 2) {
-    return "Too Shallow";
+    return Score.TooShallow;
   } else {
-    return "Perfect";
+    return Score.Perfect;
+  }
+}
+
+export function getTimingScore(interval) {
+  if (Math.abs(interval - TARGET_INTERVAL_MS) <= TOLERANCE_MS) {
+    return Score.Perfect;
+  } else if (interval < TARGET_INTERVAL_MS - TOLERANCE_MS) {
+    return Score.TooFast;
+  } else {
+    return Score.Missed;
+  }
+}
+
+export function getOverallScore(timingScore, depthScore) {
+  if (timingScore === Score.Perfect && depthScore === Score.Perfect) {
+    return Feedback.Push;
+  } else if (timingScore === Score.Perfect && depthScore === Score.TooShallow) {
+    return Feedback.PushHarder;
+  } else if (timingScore === Score.Perfect && depthScore === Score.TooDeep) {
+    return Feedback.PushSoftly;
+  } else if (timingScore === Score.TooFast && depthScore === Score.Perfect) {
+    return Feedback.PushSlower;
+  } else if (timingScore === Score.TooFast && depthScore === Score.TooShallow) {
+    return Feedback.PushSlowerHarder;
+  } else if (timingScore === Score.TooFast && depthScore === Score.TooDeep) {
+    return Feedback.PushSlowerSoftly;
+  } else if (timingScore === Score.Missed && depthScore === Score.TooShallow) {
+    return Feedback.PushFasterHarder;
+  } else if (timingScore === Score.Missed && depthScore === Score.Perfect) {
+    return Feedback.PushFaster;
+  } else if (timingScore === Score.Missed && depthScore === Score.TooDeep) {
+    return Feedback.PushFasterSoftly;
+  } else if (timingScore === Score.Missed && depthScore === Score.Missed) {
+    return Feedback.PushFaster;
+  } else {
+    return Feedback.Push;
+  }
+}
+
+const colorStyle = {
+  green: {
+    backgroundColor: "#22C55E",
+    borderColor: "#1CAE52",
+  },
+  darkerGreen: {
+    backgroundColor: "#16A34A",
+    borderColor: "#138E3B",
+  },
+  red: {
+    backgroundColor: "#DC2626",
+    borderColor: "#BB1E1E",
+  },
+  yellow: {
+    backgroundColor: "#F59E0B",
+    borderColor: "#D48806",
+  },
+  gray: {
+    backgroundColor: "#bab8b8",
+    borderColor: "#a6a6a6",
+  },
+};
+
+export function getOverallScoreColor(score) {
+  switch (score) {
+    case Feedback.Push:
+      return colorStyle.green;
+    case Feedback.PushSlower:
+    case Feedback.PushSoftly:
+    case Feedback.PushFasterSoftly:
+    case Feedback.PushSlowerSoftly:
+      return colorStyle.red;
+    case Feedback.PushFaster:
+    case Feedback.PushHarder:
+    case Feedback.PushFasterHarder:
+    case Feedback.PushSlowerHarder:
+      return colorStyle.yellow;
+    default:
+      return colorStyle.gray;
   }
 }
