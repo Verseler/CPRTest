@@ -2,6 +2,9 @@ import { StyleSheet, Text, View, Button } from "react-native";
 import useTimingAudio from "./hooks/useTimingAudio";
 import useCpr from "./hooks/useCpr"; // Import the custom hook
 import { useNavigation } from "@react-navigation/native";
+import { getOverallScoreColor } from "./cpr.helper";
+import ScoreCircle from "./components/ScoreCircle";
+import { useMemo } from "react";
 
 export default function CPR() {
   const { isLoading, playAudio, pauseAudio } = useTimingAudio();
@@ -15,6 +18,10 @@ export default function CPR() {
     startMonitoring,
     stopMonitoring,
   } = useCpr();
+  const { backgroundColor, borderColor } = useMemo(
+    () => getOverallScoreColor(overallScore),
+    [overallScore]
+  );
   const navigation = useNavigation();
 
   const handleStartMonitoring = () => {
@@ -32,6 +39,7 @@ export default function CPR() {
     navigation.goBack();
   };
 
+  //! remove this later
   if (isMonitoring === false) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -50,15 +58,15 @@ export default function CPR() {
         <Button title="Back" onPress={handleExit} />
       </View>
       <View style={styles.content}>
-        <View style={[styles.scoreCircleContainer, styles.smallCircle]}>
-          <Text style={[styles.score, styles.smallScore]}>{timingScore}</Text>
-        </View>
-        <View style={[styles.scoreCircleContainer, styles.bigCircle]}>
-          <Text style={[styles.score, styles.bigScore]}>{overallScore}</Text>
-        </View>
-        <View style={[styles.scoreCircleContainer, styles.smallCircle]}>
-          <Text style={[styles.score, styles.smallScore]}>{depthScore}</Text>
-        </View>
+        <ScoreCircle label="Timing" score={timingScore} size="small" />
+        <ScoreCircle
+          label="Overall"
+          score={overallScore}
+          size="big"
+          backgroundColor={backgroundColor}
+          borderColor={borderColor}
+        />
+        <ScoreCircle label="Depth" score={depthScore} size="small" />
       </View>
     </View>
   );
@@ -88,28 +96,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
-    borderWidth: 4,
-    borderColor: "gray",
+    borderColor: "#a6a6a6",
+    backgroundColor: "#bab8b8",
     borderRadius: 500,
     maxHeight: "90%",
-  },
-  smallCircle: {
-    width: 170,
-    height: 170,
-  },
-  bigCircle: {
-    width: 290,
-    height: 290,
-  },
-  score: {
-    textAlign: "center",
-    fontWeight: "bold",
-    color: "gray",
-  },
-  smallScore: {
-    fontSize: 22,
-  },
-  bigScore: {
-    fontSize: 36,
   },
 });

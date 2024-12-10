@@ -13,11 +13,6 @@ const TARGET_INTERVAL_MS = 500;
 const UPDATE_INTERVAL = 16.67;
 
 const useCpr = () => {
-  const [accelerometerData, setAccelerometerData] = useState({
-    x: 0,
-    y: 0,
-    z: 0,
-  });
   const [isMonitoring, setIsMonitoring] = useState(false);
   const subscription = useRef(null);
   const lastCompressionTime = useRef(null);
@@ -86,8 +81,6 @@ const useCpr = () => {
       lastCompressionTime.current = now;
       compressionTimer.current = 0;
     }
-
-    setAccelerometerData(data);
   }, []);
 
   const resetCompressionScores = () => {
@@ -97,7 +90,7 @@ const useCpr = () => {
         depth: "",
         overall: "",
       });
-    }, 200);
+    }, 150);
   };
 
   const startMonitoring = () => {
@@ -117,7 +110,6 @@ const useCpr = () => {
   };
 
   return {
-    accelerometerData,
     compressionScores,
     isMonitoring,
     startMonitoring,
