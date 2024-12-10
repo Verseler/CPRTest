@@ -6,10 +6,11 @@ import { useNavigation } from "@react-navigation/native";
 export default function CPR() {
   const { isLoading, playAudio, pauseAudio } = useTimingAudio();
   const {
-    compressionCount,
-    timingScore,
-    compressionDepth,
-    depthScore,
+    compressionScores: {
+      depth: depthScore,
+      timing: timingScore,
+      overall: overallScore,
+    },
     isMonitoring,
     startMonitoring,
     stopMonitoring,
@@ -48,21 +49,15 @@ export default function CPR() {
       <View style={styles.header}>
         <Button title="Back" onPress={handleExit} />
       </View>
-      {/* <Text style={styles.sensorData}>
-        Compression Count: {compressionCount}
-      </Text> */}
-
-      <Text style={styles.sensorData}>Compression Depth:</Text>
-      <Text style={[styles.sensorData, { fontWeight: "bold", fontSize: 16 }]}>
-        {compressionDepth} inches
-      </Text>
-
       <View style={styles.content}>
-        <View style={styles.scoreCircleContainer}>
-          <Text style={styles.score}>{timingScore}</Text>
+        <View style={[styles.scoreCircleContainer, styles.smallCircle]}>
+          <Text style={[styles.score, styles.smallScore]}>{timingScore}</Text>
         </View>
-        <View style={styles.scoreCircleContainer}>
-          <Text style={styles.score}>{depthScore}</Text>
+        <View style={[styles.scoreCircleContainer, styles.bigCircle]}>
+          <Text style={[styles.score, styles.bigScore]}>{overallScore}</Text>
+        </View>
+        <View style={[styles.scoreCircleContainer, styles.smallCircle]}>
+          <Text style={[styles.score, styles.smallScore]}>{depthScore}</Text>
         </View>
       </View>
     </View>
@@ -81,13 +76,12 @@ const styles = StyleSheet.create({
   },
   sensorData: {
     fontSize: 14,
-
   },
   content: {
     flex: 1,
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-end",
     columnGap: 20,
   },
   scoreCircleContainer: {
@@ -97,13 +91,25 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: "gray",
     borderRadius: 500,
-    width: 220,
-    height: 220,
+    maxHeight: "90%",
+  },
+  smallCircle: {
+    width: 170,
+    height: 170,
+  },
+  bigCircle: {
+    width: 290,
+    height: 290,
   },
   score: {
-    fontSize: 40,
     textAlign: "center",
     fontWeight: "bold",
     color: "gray",
+  },
+  smallScore: {
+    fontSize: 22,
+  },
+  bigScore: {
+    fontSize: 36,
   },
 });
