@@ -4,11 +4,12 @@ import {
   calculateDepth,
   calculateMagnitude,
   getDepthScore,
+  getOverallScore,
+  getTimingScore,
   isCompression,
 } from "../cpr.helper";
 
 const TARGET_INTERVAL_MS = 500;
-const TOLERANCE_MS = 100;
 const UPDATE_INTERVAL = 16.67;
 
 const useCpr = () => {
@@ -17,15 +18,16 @@ const useCpr = () => {
     y: 0,
     z: 0,
   });
-  const [compressionCount, setCompressionCount] = useState(0);
-  const [timingScore, setTimingScore] = useState("");
   const [isMonitoring, setIsMonitoring] = useState(false);
-
+  const subscription = useRef(null);
   const lastCompressionTime = useRef(null);
   const compressionTimer = useRef(0);
-  const subscription = useRef(null);
-  const [compressionDepth, setCompressionDepth] = useState(null);
-  const [depthScore, setDepthScore] = useState("");
+  const compressionCount = useRef(0);
+  const [compressionScores, setCompressionScores] = useState({
+    timing: "",
+    depth: "",
+    overall: "",
+  });
 
   useEffect(() => {
     if (isMonitoring) {
@@ -34,12 +36,15 @@ const useCpr = () => {
 
       const timerInterval = setInterval(() => {
         if (compressionTimer.current >= TARGET_INTERVAL_MS) {
-          // If timer exceeds 500ms, set timingScore to "Missed" and reset timer
-          setTimingScore("Missed");
-          setDepthScore("Missed");
+          // If timer exceeds 500ms, set scores to "Missed" and reset timer
+          const overallScore = getOverallScore("Missed", "Missed");
+          setCompressionScores({
+            timing: "Missed",
+            depth: "Missed",
+            overall: overallScore,
+          });
 
-          resetTimingScore();
-          resetDepthScore();
+          resetCompressionScores();
           compressionTimer.current = 0;
         } else {
           compressionTimer.current += UPDATE_INTERVAL;
@@ -58,21 +63,26 @@ const useCpr = () => {
   const handleAccelerometerData = useCallback((data) => {
     const magnitude = calculateMagnitude(data);
 
-    if (isCompression(data.z, lastCompressionTime.current)) {
+    if (isCompression(magnitude, lastCompressionTime.current)) {
       // Calculate depth based on the z-axis acceleration
       const depth = calculateDepth(data.z);
-   
-      setCompressionDepth(depth);
-      setDepthScore(getDepthScore(depth));
-      resetDepthScore();
+      const depthScore = getDepthScore(depth);
+      console.log("d: ", depth);
 
       // Evaluate timing
       const now = Date.now();
       const compressionInterval = now - lastCompressionTime.current;
+      const timingScore = getTimingScore(compressionInterval);
 
-      evaluateTiming(compressionInterval);
-      setCompressionCount((prev) => prev + 1);
+      const overallScore = getOverallScore(timingScore, depthScore);
+      setCompressionScores({
+        timing: timingScore,
+        depth: depthScore,
+        overall: overallScore,
+      });
 
+      resetCompressionScores();
+      compressionCount.current += 1;
       lastCompressionTime.current = now;
       compressionTimer.current = 0;
     }
@@ -80,36 +90,23 @@ const useCpr = () => {
     setAccelerometerData(data);
   }, []);
 
-  const evaluateTiming = useCallback((interval) => {
-    if (Math.abs(interval - TARGET_INTERVAL_MS) <= TOLERANCE_MS) {
-      setTimingScore("Perfect");
-    } else if (interval < TARGET_INTERVAL_MS - TOLERANCE_MS) {
-      setTimingScore("Too Fast");
-    } else {
-      setTimingScore("Missed");
-    }
-
-    resetTimingScore();
-  }, []);
-
-  const resetTimingScore = () => {
+  const resetCompressionScores = () => {
     setTimeout(() => {
-      setTimingScore("");
-    }, 150);
-  };
-
-  const resetDepthScore = () => {
-    setTimeout(() => {
-      setCompressionDepth(null);
-      setDepthScore("");
-    }, 150);
+      setCompressionScores({
+        timing: "",
+        depth: "",
+        overall: "",
+      });
+    }, 200);
   };
 
   const startMonitoring = () => {
-    setCompressionCount(0);
-    setTimingScore("");
-    setCompressionDepth(null);
-    setDepthScore("");
+    compressionCount.current = 0;
+    setCompressionScores({
+      timing: "",
+      depth: "",
+      overall: "",
+    });
     lastCompressionTime.current = null;
     compressionTimer.current = 0;
     setIsMonitoring(true);
@@ -121,10 +118,7 @@ const useCpr = () => {
 
   return {
     accelerometerData,
-    compressionCount,
-    timingScore,
-    compressionDepth,
-    depthScore,
+    compressionScores,
     isMonitoring,
     startMonitoring,
     stopMonitoring,
