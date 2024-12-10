@@ -19,7 +19,7 @@ export default function App() {
               name="CPR"
               component={CPR}
               options={{
-                orientation: "landscape_right",
+                orientation: "landscape_left",
                 headerShown: false,
                 statusBarTranslucent: true,
                 statusBarHidden: true,
