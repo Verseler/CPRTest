@@ -20,7 +20,13 @@ function ScoreCircle({ label, score, size, backgroundColor, borderColor }) {
   }
 
   return (
-    <View style={[styles.scoreCircleContainer, styles.smallCircle]}>
+    <View
+      style={[
+        styles.scoreCircleContainer,
+        styles.smallCircle,
+        { backgroundColor: backgroundColor, borderColor: borderColor },
+      ]}
+    >
       <Text style={[styles.score, styles.smallScore]}>{score}</Text>
       <Text style={[styles.label, styles.smallLabel]}>{label}</Text>
     </View>

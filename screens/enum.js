@@ -16,4 +16,5 @@ export const Feedback = {
   PushSlowerHarder: "Push Slower and Harder",
   PushFasterSoftly: "Push Faster and Softly",
   PushSlowerSoftly: "Push Slower and Softly",
+  PleasePush: "Please Push",
 };

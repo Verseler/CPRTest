@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, Button } from "react-native";
 import useTimingAudio from "./hooks/useTimingAudio";
 import useCpr from "./hooks/useCpr"; // Import the custom hook
 import { useNavigation } from "@react-navigation/native";
-import { getOverallScoreColor } from "./cpr.helper";
+import { getOverallScoreColor, getScoreColor } from "./cpr.helper";
 import ScoreCircle from "./components/ScoreCircle";
 import { useMemo } from "react";
 
@@ -18,10 +18,12 @@ export default function CPR() {
     startMonitoring,
     stopMonitoring,
   } = useCpr();
-  const { backgroundColor, borderColor } = useMemo(
-    () => getOverallScoreColor(overallScore),
-    [overallScore]
-  );
+  const { backgroundColor: overallBgColor, borderColor: overallBorderColor } =
+    useMemo(() => getOverallScoreColor(overallScore), [overallScore]);
+  const { backgroundColor: timingBgColor, borderColor: timingBorderColor } =
+    useMemo(() => getScoreColor(timingScore), [timingScore]);
+  const { backgroundColor: depthBgColor, borderColor: depthBorderColor } =
+    useMemo(() => getScoreColor(depthScore), [depthScore]);
   const navigation = useNavigation();
 
   const handleStartMonitoring = () => {
@@ -58,15 +60,27 @@ export default function CPR() {
         <Button title="Back" onPress={handleExit} />
       </View>
       <View style={styles.content}>
-        <ScoreCircle label="Timing" score={timingScore} size="small" />
         <ScoreCircle
-          label="Overall"
+          label="Timing"
+          score={timingScore}
+          size="small"
+          backgroundColor={timingBgColor}
+          borderColor={timingBorderColor}
+        />
+        <ScoreCircle
+          label="Feedback"
           score={overallScore}
           size="big"
-          backgroundColor={backgroundColor}
-          borderColor={borderColor}
+          backgroundColor={overallBgColor}
+          borderColor={overallBorderColor}
         />
-        <ScoreCircle label="Depth" score={depthScore} size="small" />
+        <ScoreCircle
+          label="Depth"
+          score={depthScore}
+          size="small"
+          backgroundColor={depthBgColor}
+          borderColor={depthBorderColor}
+        />
       </View>
     </View>
   );
